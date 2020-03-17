@@ -1,3 +1,7 @@
+#see here for math equn
+#https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5348083/
+
+
 import numpy as np
 import matplotlib.pylab as plt
 import itertools
