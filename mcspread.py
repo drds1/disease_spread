@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pylab as plt
 import mcspread_utils as utils
-
+from scipy.spatial import distance
 
 
 class movement:
@@ -49,13 +49,27 @@ class movement:
         self.dpx = diff_posx
         self.dpy = diff_posy
 
-
+    def compute_distances(self,transmission_distance = 2.0):
+        '''
+        compute the distances between all pairs
+        of particles at each step in the simulation
+        :return:
+        '''
+        N, Nt, Ndim = np.shape(self.pos)
+        self.dist = np.zeros((N,N,Nt))
+        self.prox = np.zeros((N, N, Nt))
+        for it in range(Nt):
+            dnow = distance.cdist(self.pos[:, it, :], self.pos[:, it, :], 'euclidean')
+            self.dist[:,:,it] = dnow
+            self.prox[:,:,it] = dnow < transmission_distance
 
 def test_particle_movements(file = 'particle_movements.pdf'):
     x = movement()
     x.arrange_particles()
     x.random_walk()
+    x.compute_distances()
     pos = x.pos
+    dist = x.dist
 
     #plot particle movements
     fig = plt.figure()
@@ -72,9 +86,10 @@ if __name__ == '__main__':
     x = movement(seed=12345)
     x.arrange_particles()
     x.random_walk()
+    x.compute_distances()
     pos = x.pos
+    dist = x.dist
+    prox = x.prox
 
-    test_particle_movements()
-
-
-
+    dist0 = dist[:,:,0]
+    prox0 = prox[:,:,0]
