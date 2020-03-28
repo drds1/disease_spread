@@ -14,7 +14,7 @@ class movement:
         self.Nx = Nx
         self.Ny = Ny
         self.N = N
-        self.Ntimes = Ntimes
+        self.Nt = Ntimes
         self.pos = np.zeros((N,Ntimes,2))
         np.random.seed(seed)
 
@@ -33,7 +33,7 @@ class movement:
         random walk all particles for N time steps
         :return:
         '''
-        move_code = np.random.randint(0, 5, [self.N,self.Ntimes])
+        move_code = np.random.randint(0, 5, [self.N,self.Nt])
         #stay = move_code == 0
         right = move_code == 1
         left = move_code == 2
@@ -55,13 +55,87 @@ class movement:
         of particles at each step in the simulation
         :return:
         '''
-        N, Nt, Ndim = np.shape(self.pos)
+        N, Nt, Ndim = self.N,self.Nt,2
         self.dist = np.zeros((N,N,Nt))
         self.prox = np.zeros((N, N, Nt))
         for it in range(Nt):
             dnow = distance.cdist(self.pos[:, it, :], self.pos[:, it, :], 'euclidean')
             self.dist[:,:,it] = dnow
             self.prox[:,:,it] = dnow < transmission_distance
+
+    def compute_infections(self,
+                           default_immunity = 0.0,
+                           default_infections = 0.2,
+                           default_transmission = 0.8,
+                           infection_length = 5,
+                           death_rate = 0.01):
+        '''
+        compute infections
+        :return:
+        '''
+        self.transmit_prob = default_transmission
+        self.alive = np.ones((self.N, self.Nt))
+        self.days_infected = np.zeros((self.N,self.Nt))
+
+        #default immunity
+        if default_immunity < 1:
+            self.N_immune = np.int(default_immunity*self.N)
+        else:
+            self.N_immune = default_immunity
+        self.immune = np.zeros((self.N, self.Nt))
+        idx = np.random.choice(np.arange(self.N), self.N_immune, replace=False)
+        self.immune[idx, 0] = 1
+
+
+        #default infections
+        if default_infections < 1:
+            self.N_start_infections = np.int(self.N*default_infections)
+        else:
+            self.N_start_infections = default_infections
+        self.infected = np.zeros((self.N, self.Nt))
+        idx = np.random.choice(np.arange(self.N),self.N_start_infections,replace=False)
+        self.infected[idx,0] = 1
+
+
+        #do it
+        for it in range(1,self.Nt):
+            prox0 = self.prox[:, 0, it]
+            infected0 = self.infected[:,it]
+            immune0 = self.immune[:,it]
+            alive0 = self.alive[:,it]
+
+            #days infected
+            idx_infected = np.where(self.infected[:,it] == 1)[0]
+            self.days_infected[idx_infected,it] = self.days_infected[idx_infected,it-1] + 1
+            idx_notinfected = np.where(self.infected[:, it] == 0)[0]
+            self.days_infected[idx_notinfected, it] = 0
+
+            idx_infectionend = np.where(self.days_infected[:,it] >= infection_length)[0]
+            ninfectionend = len(idx_infectionend)
+            ndie = np.int(death_rate*ninfectionend)
+            idxdie = np.random.choice(idx_infectionend,ndie,replace=False)
+            idxsurvive = np.setdiff1d(idx_infectionend, idxdie)
+
+
+            ### carry on from tomorrow
+            idxdead = np.where(self.alive[idxdie] == 1)
+            self.alive
+            np.where(self.infected[])
+
+            #recieved from
+            receive = prox0*infected0*immune0*alive0
+
+            #transmitted to
+
+
+
+
+
+
+
+
+
+
 
 def test_particle_movements(file = 'particle_movements.pdf'):
     x = movement()
