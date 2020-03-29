@@ -99,28 +99,35 @@ class movement:
 
         #do it
         for it in range(1,self.Nt):
-            prox0 = self.prox[:, 0, it]
+            prox0 = self.prox[:, :, it]
             infected0 = self.infected[:,it]
             immune0 = self.immune[:,it]
             alive0 = self.alive[:,it]
 
+
+            #new infections
+            idxprox = np.array(np.where(prox0 == 1)).T
+            nprox = len(idxprox)/2
+            for idx in range(nprox):
+                idx1, idx2 = idxprox[idx,:]
+
+            idxprox = idxprox[idxprox[:, 0] != idxprox[:, 1], :]
+            idx_infected = np.where(self.infected[:, it] == 1)[0]
+
+
             #days infected
-            idx_infected = np.where(self.infected[:,it] == 1)[0]
             self.days_infected[idx_infected,it] = self.days_infected[idx_infected,it-1] + 1
             idx_notinfected = np.where(self.infected[:, it] == 0)[0]
             self.days_infected[idx_notinfected, it] = 0
 
+            #new deaths
             idx_infectionend = np.where(self.days_infected[:,it] >= infection_length)[0]
             ninfectionend = len(idx_infectionend)
             ndie = np.int(death_rate*ninfectionend)
             idxdie = np.random.choice(idx_infectionend,ndie,replace=False)
-            idxsurvive = np.setdiff1d(idx_infectionend, idxdie)
+            #idxsurvive = np.setdiff1d(idx_infectionend, idxdie)
+            self.alive[idxdie,it:] = 0
 
-
-            ### carry on from tomorrow
-            idxdead = np.where(self.alive[idxdie] == 1)
-            self.alive
-            np.where(self.infected[])
 
             #recieved from
             receive = prox0*infected0*immune0*alive0
@@ -167,3 +174,5 @@ if __name__ == '__main__':
 
     dist0 = dist[:,:,0]
     prox0 = prox[:,:,0]
+    idxprox = np.array(np.where(prox0==1)).T
+    idxprox = idxprox[idxprox[:,0] != idxprox[:,1],:]
