@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pylab as plt
 import mcspread_utils as utils
 from scipy.spatial import distance
-
+import os
 
 class movement:
     '''
@@ -68,7 +68,8 @@ class movement:
                            default_infections = 0.2,
                            default_transmission = 0.8,
                            infection_length = 5,
-                           death_rate = 0.01):
+                           death_rate = 0.01,
+                           verbose = True):
         '''
         compute infections
         :return:
@@ -94,26 +95,28 @@ class movement:
             self.N_start_infections = default_infections
         self.infected = np.zeros((self.N, self.Nt))
         idx = np.random.choice(np.arange(self.N),self.N_start_infections,replace=False)
-        self.infected[idx,0] = 1
+        idx = idx[self.immune[idx,0] == 0]
+        self.infected[idx,:] = 1
 
 
         #do it
         for it in range(1,self.Nt):
+            if verbose:
+                print('day '+str(it)+' of '+str(self.Nt))
             prox0 = self.prox[:, :, it]
-            infected0 = self.infected[:,it]
-            immune0 = self.immune[:,it]
-            alive0 = self.alive[:,it]
-
 
             #new infections
+            idx_infected = np.where(self.infected[:, it] == 1)[0]
             idxprox = np.array(np.where(prox0 == 1)).T
-            nprox = len(idxprox)/2
+            idxprox = idxprox[idxprox[:, 0] != idxprox[:, 1], :]
+            nprox = len(idxprox)
             for idx in range(nprox):
                 idx1, idx2 = idxprox[idx,:]
-
-            idxprox = idxprox[idxprox[:, 0] != idxprox[:, 1], :]
-            idx_infected = np.where(self.infected[:, it] == 1)[0]
-
+                if idx1 in idx_infected and \
+                        self.immune[idx2,it] == 0 and \
+                        self.alive[idx2,it] == 1 and \
+                        self.immune[idx1,it] == 0:
+                    self.infected[idx2,it] = 1
 
             #days infected
             self.days_infected[idx_infected,it] = self.days_infected[idx_infected,it-1] + 1
@@ -127,18 +130,80 @@ class movement:
             idxdie = np.random.choice(idx_infectionend,ndie,replace=False)
             #idxsurvive = np.setdiff1d(idx_infectionend, idxdie)
             self.alive[idxdie,it:] = 0
-
-
-            #recieved from
-            receive = prox0*infected0*immune0*alive0
-
-            #transmitted to
-
-
+            self.infected[idx_infectionend,it:] = 0
+            self.days_infected[idx_infectionend,it] = 0
+            self.immune[idx_infectionend,it:] = 1
+        self.DeadNumber = self.N - np.sum(self.alive,axis=0)
+        self.InfectedNumber = np.sum(self.infected,axis=0)
+        self.ImmuneNumber = np.sum(self.immune,axis=0)
 
 
 
 
+    def plot_timeseries(self,
+                        quantity=['infections','deaths','immunity'],
+                        save=None):
+        '''
+        plot key metric timeseries "infections","deaths","immunity"
+        :return:
+        '''
+        plt.close()
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        x = np.arange(self.Nt)
+        for q in quantity:
+            if q == 'deaths':
+                y = self.DeadNumber/self.N
+            if q == 'infections':
+                y = self.InfectedNumber/self.N
+            if q == 'immunity':
+                y = self.ImmuneNumber/self.N
+            ax1.plot(x,y,label=q)
+        ax1.set_xlabel('days since start')
+        ax1.set_ylabel('population fraction')
+        plt.legend()
+        if save is None:
+            plt.show()
+        else:
+            plt.savefig(save)
+            plt.close()
+
+
+
+
+    def plot_movements(self,file = 'annimation'):
+        '''
+        video of particle movements
+        :return:
+        '''
+        os.system('rm -rf '+file)
+        os.system('mkdir '+file)
+        for it in range(self.Nt):
+            plt.close()
+            fig = plt.figure()
+            ax1 = fig.add_subplot(111)
+            x = self.pos[:, it, 0]
+            y = self.pos[:, it, 1]
+
+            alive = self.alive[:,it]
+            idxalive = np.where(alive==1)[0]
+            ndead = 100.*(1. - len(idxalive)/self.N)
+            ax1.scatter(x[idxalive],y[idxalive],color='b',label='normal: ('+str(ndead)+' pc dead)')
+
+            infected = self.infected[:, it]
+            idxinfected = np.where(infected == 1)[0]
+            ninfected = 100*len(idxinfected)/self.N
+            ax1.scatter(x[idxinfected],y[idxinfected],color='r',label=str(ninfected)+' pc infected')
+
+            immune = self.immune[:, it]
+            idximmune = np.where(immune == 1)[0]
+            nimmune = 100.*(len(idximmune)/self.N)
+            ax1.scatter(x[idximmune],y[idximmune],color='green',label=str(nimmune)+' pc immune')
+
+            plt.legend()
+            plt.savefig(file+'/'+str(it)+'.pdf')
+            #idxdead = np.where(alive == 0)[0]
+            #ax1.scatter(x[idxdead], y[idxdead], color='b', label='normal')
 
 
 
@@ -171,7 +236,13 @@ if __name__ == '__main__':
     pos = x.pos
     dist = x.dist
     prox = x.prox
+    x.compute_infections()
 
+    x.plot_timeseries(save='simulation_timeseries.pdf')
+    x.plot_movements(file='annimation')
+
+    #check infection duration
+    inf6 = x.infected[6, :]
     dist0 = dist[:,:,0]
     prox0 = prox[:,:,0]
     idxprox = np.array(np.where(prox0==1)).T
