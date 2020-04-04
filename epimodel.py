@@ -135,7 +135,7 @@ class epi_gridsearch:
         SIR = EpiModel()
         SIR.add_interaction('S', 'I', 'I', 0.2)
         SIR.add_spontaneous('I', 'R', 0.1)
-        SIR.integrate(self.days, S=S-I, I=I, R=R)
+        SIR.integrate(self.days+1, S=S-I, I=I, R=R)
         x = SIR.values_
         self.Sts, self.Its, self.Rts = x.values[:,0], x.values[:,1], x.values[:,2]
         self.Dts = S - self.Its - self.Rts
@@ -143,20 +143,21 @@ class epi_gridsearch:
     def evaluate_performance(self,model_cases, model_deaths, model_recovered,
                     data_cases, data_deaths, data_recovered):
 
+        Ndays = len(data_deaths)
         BOF_deaths = np.nan
         BOF_recovered = np.nan
         BOF_cases = np.nan
         BOF = 0.0
         if data_cases is not None:
-            BOF_cases = np.sum((model_cases - data_cases)**2)
+            BOF_cases = np.sum((model_cases[:Ndays] - data_cases)**2)
             BOF = BOF + BOF_cases
 
         if data_deaths is not None:
-            BOF_deaths = np.sum((model_deaths - data_deaths)**2)
+            BOF_deaths = np.sum((model_deaths[:Ndays] - data_deaths)**2)
             BOF = BOF+BOF_deaths
 
         if data_recovered is not None:
-            BOF_recovered = np.sum((model_recovered - data_recovered)**2)
+            BOF_recovered = np.sum((model_recovered[:Ndays] - data_recovered)**2)
             BOF = BOF + BOF_recovered
 
         return BOF
@@ -170,25 +171,44 @@ class epi_gridsearch:
         '''
         grid = self.grid.values
         BOF = []
+        dead_ts = []
+        infected_ts = []
+        recovered_ts = []
         for i in range(len(grid)):
             Snow, Inow, Rnow = grid[i,:]
             self.run_model(S=Snow,I=Inow,R=Rnow)
             BOF.append(self.evaluate_performance(self.Its,self.Dts,self.Rts,self.data_cases, self.data_deaths, None))
+            dead_ts.append(self.Dts)
+            recovered_ts.append(self.Rts)
+            infected_ts.append(self.Its)
         self.grid['BOF'] = BOF
+        self.grid['infected ts'] = infected_ts
+        self.grid['recovered ts'] = recovered_ts
+        self.grid['dead ts'] = dead_ts
+        self.grid.sort_values(by='BOF',inplace=True)
 
 
 
 if __name__ == '__main__':
 
+
+
     #load data
+    data_cases = np.loadtxt('data_cases.dat')
+    data_deaths = np.loadtxt('data_deaths.dat')
+    Ndays = len(data_deaths)
+
+    #run model
     x = epi_gridsearch(
-        parms={'S': np.arange(10),
+        parms={'S': np.array([65.e6]),
                'I': np.arange(10),
-               'R': np.arange(10)}
+               'R': np.array([0])},
+        days=Ndays
     )
-    x.data_cases = np.loadtxt('data_cases.dat')
-    x.data_deaths = np.loadtxt('data_deaths.dat')
+    x.data_cases = data_cases
+    x.data_deaths = data_deaths
     x.prepare_grid()
+    x.grid_search()
     grid = x.grid
 
 
