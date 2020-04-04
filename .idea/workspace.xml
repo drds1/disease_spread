@@ -29,13 +29,13 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/epimodel.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="318">
-              <caret line="135" lean-forward="true" selection-start-line="135" selection-end-line="135" />
+            <state relative-caret-position="202">
+              <caret line="177" lean-forward="true" selection-start-line="177" selection-end-line="177" />
               <folding>
-                <element signature="e#130#151#0" expanded="true" />
+                <element signature="e#206#227#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -50,11 +50,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/data_deaths.dat">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="660">
-              <caret line="44" column="4" lean-forward="true" selection-start-line="44" selection-start-column="4" selection-end-line="44" selection-end-column="4" />
+            <state relative-caret-position="370">
+              <caret line="52" lean-forward="true" selection-start-line="52" selection-end-line="52" />
             </state>
           </provider>
         </entry>
@@ -85,9 +85,9 @@
       <list>
         <option value="$PROJECT_DIR$/mcspread_utils.py" />
         <option value="$PROJECT_DIR$/mcspread.py" />
-        <option value="$PROJECT_DIR$/epimodel.py" />
         <option value="$PROJECT_DIR$/data_cases.dat" />
         <option value="$PROJECT_DIR$/data_deaths.dat" />
+        <option value="$PROJECT_DIR$/epimodel.py" />
       </list>
     </option>
   </component>
@@ -194,16 +194,6 @@
     <entry file="file://$PROJECT_DIR$/SIR.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/epimodel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="318">
-          <caret line="135" lean-forward="true" selection-start-line="135" selection-end-line="135" />
-          <folding>
-            <element signature="e#130#151#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data_cases.dat">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="430">
@@ -213,8 +203,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/data_deaths.dat">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="660">
-          <caret line="44" column="4" lean-forward="true" selection-start-line="44" selection-start-column="4" selection-end-line="44" selection-end-column="4" />
+        <state relative-caret-position="370">
+          <caret line="52" lean-forward="true" selection-start-line="52" selection-end-line="52" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/epimodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="202">
+          <caret line="177" lean-forward="true" selection-start-line="177" selection-end-line="177" />
+          <folding>
+            <element signature="e#206#227#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

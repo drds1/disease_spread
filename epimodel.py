@@ -10,6 +10,7 @@ import numpy as np
 import scipy.integrate
 import pandas as pd
 import matplotlib.pyplot as plt
+import itertools
 
 
 class EpiModel:
@@ -114,14 +115,20 @@ class EpiModel:
 
 class epi_gridsearch:
 
-    def __init__(self,days = 365):
+    def __init__(self,days = 365,parms = {'S':np.arange(10),
+                     'I':np.arange(10),
+                     'R':np.arange(10)}):
         self.data_cases = None
         self.data_deaths = None
         self.data_recovered = None
         self.days = days
-        self.grid = {'S':np.arange(10),
-                     'I':np.arange(10),
-                     'R':np.arange(10)}
+        self.parms = parms
+
+    def prepare_grid(self):
+        keys = self.parms.keys()
+        values = (self.parms[key] for key in keys)
+        self.grid = pd.DataFrame([dict(zip(keys, combination)) for combination in itertools.product(*values)])
+
 
 
     def run_model(self,S=100000,I=1,R=0):
@@ -130,11 +137,58 @@ class epi_gridsearch:
         SIR.add_spontaneous('I', 'R', 0.1)
         SIR.integrate(self.days, S=S-I, I=I, R=R)
         x = SIR.values_
-        Sts, Its, Rts = x.values[:,0], x.values[:,1], x.values[:,2]
+        self.Sts, self.Its, self.Rts = x.values[:,0], x.values[:,1], x.values[:,2]
+        self.Dts = S - self.Its - self.Rts
+
+    def evaluate_performance(self,model_cases, model_deaths, model_recovered,
+                    data_cases, data_deaths, data_recovered):
+
+        BOF_deaths = np.nan
+        BOF_recovered = np.nan
+        BOF_cases = np.nan
+        BOF = 0.0
+        if data_cases is not None:
+            BOF_cases = np.sum((model_cases - data_cases)**2)
+            BOF = BOF + BOF_cases
+
+        if data_deaths is not None:
+            BOF_deaths = np.sum((model_deaths - data_deaths)**2)
+            BOF = BOF+BOF_deaths
+
+        if data_recovered is not None:
+            BOF_recovered = np.sum((model_recovered - data_recovered)**2)
+            BOF = BOF + BOF_recovered
+
+        return BOF
+
+
+
+    def grid_search(self):
+        '''
+        perform grid search for all combinations of parameters in grid
+        :return:
+        '''
+        grid = self.grid.values
+        BOF = []
+        for i in range(len(grid)):
+            Snow, Inow, Rnow = grid[i,:]
+            self.run_model(S=Snow,I=Inow,R=Rnow)
+            BOF.append(self.evaluate_performance(self.Its,self.Dts,self.Rts,self.data_cases, self.data_deaths, None))
+        self.grid['BOF'] = BOF
 
 
 
 if __name__ == '__main__':
 
     #load data
+    x = epi_gridsearch(
+        parms={'S': np.arange(10),
+               'I': np.arange(10),
+               'R': np.arange(10)}
+    )
+    x.data_cases = np.loadtxt('data_cases.dat')
+    x.data_deaths = np.loadtxt('data_deaths.dat')
+    x.prepare_grid()
+    grid = x.grid
+
 
