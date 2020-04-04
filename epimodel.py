@@ -115,7 +115,9 @@ class EpiModel:
 class epi_gridsearch:
 
     def __init__(self,days = 365):
-        self.data = None
+        self.data_cases = None
+        self.data_deaths = None
+        self.data_recovered = None
         self.days = days
         self.grid = {'S':np.arange(10),
                      'I':np.arange(10),
@@ -132,6 +134,7 @@ class epi_gridsearch:
 
 
 
-
-
 if __name__ == '__main__':
+
+    #load data
+
