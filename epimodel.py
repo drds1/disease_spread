@@ -4,6 +4,7 @@
 ######################################################
 
 #https://github.com/DataForScience/Epidemiology101/blob/master/EpiModel.py
+#https://medium.com/data-for-science/epidemic-modeling-101-or-why-your-covid19-exponential-fits-are-wrong-97aa50c55f8
 
 import networkx as nx
 import numpy as np
@@ -11,6 +12,9 @@ import scipy.integrate
 import pandas as pd
 import matplotlib.pyplot as plt
 import itertools
+from sklearn.pipeline import Pipeline
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import GridSearchCV
 
 
 class EpiModel:
@@ -113,11 +117,23 @@ class EpiModel:
 
 
 
+
+
+
+
+
+
+
+
 class epi_gridsearch:
 
     def __init__(self,days = 365,parms = {'S':np.arange(10),
                      'I':np.arange(10),
-                     'R':np.arange(10)}):
+                     'R':np.zeros(10),
+                     'D':np.zeros(10),
+                     'transmission_rate':np.array([0.2]),
+                     'recovery_rate':np.array([0.1]),
+                     'death_rate':np.array([0.1])}):
         self.data_cases = None
         self.data_deaths = None
         self.data_recovered = None
@@ -131,14 +147,22 @@ class epi_gridsearch:
 
 
 
-    def run_model(self,S=100000,I=1,R=0):
+    def run_model(self,S=100000,I=1,R=0,D=0,
+                  transmission_rate=0.2,
+                  recovery_rate = 0.1,
+                  death_rate = 0.1):
         SIR = EpiModel()
-        SIR.add_interaction('S', 'I', 'I', 0.2)
-        SIR.add_spontaneous('I', 'R', 0.1)
-        SIR.integrate(self.days+1, S=S-I, I=I, R=R)
+        SIR.add_interaction('S', 'I', 'I', transmission_rate)
+        SIR.add_spontaneous('I', 'R', recovery_rate)
+        #add deaths
+        SIR.add_spontaneous('I', 'D', death_rate)
+        SIR.integrate(self.days+1, S=S-I, I=I, R=R, D=D)
         x = SIR.values_
-        self.Sts, self.Its, self.Rts = x.values[:,0], x.values[:,1], x.values[:,2]
-        self.Dts = S - self.Its - self.Rts
+        self.Sts, self.Its, \
+        self.Rts, self.Dts = x.values[:,0], \
+                             x.values[:,1], \
+                             x.values[:,2],\
+                             x.values[:,3]
 
     def evaluate_performance(self,model_cases, model_deaths, model_recovered,
                     data_cases, data_deaths, data_recovered):
@@ -175,8 +199,12 @@ class epi_gridsearch:
         infected_ts = []
         recovered_ts = []
         for i in range(len(grid)):
-            Snow, Inow, Rnow = grid[i,:]
-            self.run_model(S=Snow,I=Inow,R=Rnow)
+            Snow, Inow, Rnow, Dnow, tr, rr, dr = grid[i,:]
+            self.run_model(S=Snow,I=Inow,R=Rnow,
+                           D=Dnow,
+                           transmission_rate=tr,
+                           recovery_rate = rr,
+                           death_rate = dr)
             BOF.append(self.evaluate_performance(self.Its,self.Dts,self.Rts,self.data_cases, self.data_deaths, None))
             dead_ts.append(self.Dts)
             recovered_ts.append(self.Rts)
@@ -189,26 +217,28 @@ class epi_gridsearch:
 
 
 
+
 if __name__ == '__main__':
-
-
-
-    #load data
+    # load data
     data_cases = np.loadtxt('data_cases.dat')
     data_deaths = np.loadtxt('data_deaths.dat')
     Ndays = len(data_deaths)
-
-    #run model
+    # run model
     x = epi_gridsearch(
         parms={'S': np.array([65.e6]),
                'I': np.arange(10),
-               'R': np.array([0])},
+               'R': np.array([0]),
+               'D':np.array([0]),
+               'death_rate':np.array([0.2]),
+               'recovery_rate':np.array([0.2]),
+               'transmission_rate':np.array([0.2])},
         days=Ndays
     )
     x.data_cases = data_cases
     x.data_deaths = data_deaths
     x.prepare_grid()
     x.grid_search()
-    grid = x.grid
+    xgrid = x.grid
+
 
 
