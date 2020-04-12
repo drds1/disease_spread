@@ -156,13 +156,15 @@ class epi_gridsearch:
         SIR.add_spontaneous('I', 'R', recovery_rate)
         #add deaths
         SIR.add_spontaneous('I', 'D', death_rate)
-        SIR.integrate(self.days+1, S=S-I, I=I, R=R, D=D)
+        SIR.integrate(self.days+1, S=S-I, I=I, R=R, D = D)
         x = SIR.values_
         self.Sts, self.Its, \
-        self.Rts, self.Dts = x.values[:,0], \
+        self.Rts,self.Dts = x.values[:,0], \
                              x.values[:,1], \
                              x.values[:,2],\
-                             x.values[:,3]
+                            x.values[:,3]
+        #self.Dts = death_rate*self.Rts
+        #self.Rts = self.Rts - self.Dts
 
     def evaluate_performance(self,model_cases, model_deaths, model_recovered,
                     data_cases, data_deaths, data_recovered):
@@ -173,15 +175,18 @@ class epi_gridsearch:
         BOF_cases = np.nan
         BOF = 0.0
         if data_cases is not None:
-            BOF_cases = np.sum((model_cases[:Ndays] - data_cases)**2)
+            N = min(len(model_cases),len(data_cases))
+            BOF_cases = np.sum((model_cases[:N] - data_cases[:N])**2)
             BOF = BOF + BOF_cases
 
         if data_deaths is not None:
-            BOF_deaths = np.sum((model_deaths[:Ndays] - data_deaths)**2)
+            N = min(len(model_deaths), len(data_deaths))
+            BOF_deaths = np.sum((model_deaths[:N] - data_deaths[:N])**2)
             BOF = BOF+BOF_deaths
 
         if data_recovered is not None:
-            BOF_recovered = np.sum((model_recovered[:Ndays] - data_recovered)**2)
+            N = min(len(model_recovered), len(data_recovered))
+            BOF_recovered = np.sum((model_recovered[:N] - data_recovered[:N])**2)
             BOF = BOF + BOF_recovered
 
         return BOF
@@ -198,6 +203,7 @@ class epi_gridsearch:
         dead_ts = []
         infected_ts = []
         recovered_ts = []
+        susceptible_ts = []
         for i in range(len(grid)):
             Snow, Inow, Rnow, Dnow, tr, rr, dr = grid[i,:]
             self.run_model(S=Snow,I=Inow,R=Rnow,
@@ -209,7 +215,9 @@ class epi_gridsearch:
             dead_ts.append(self.Dts)
             recovered_ts.append(self.Rts)
             infected_ts.append(self.Its)
+            susceptible_ts.append(self.Sts)
         self.grid['BOF'] = BOF
+        self.grid['susceptible ts'] = susceptible_ts
         self.grid['infected ts'] = infected_ts
         self.grid['recovered ts'] = recovered_ts
         self.grid['dead ts'] = dead_ts
@@ -222,16 +230,16 @@ if __name__ == '__main__':
     # load data
     data_cases = np.loadtxt('data_cases.dat')
     data_deaths = np.loadtxt('data_deaths.dat')
-    Ndays = len(data_deaths)
+    Ndays = 1000#len(data_deaths)
     # run model
     x = epi_gridsearch(
-        parms={'S': np.array([65.e6]),
-               'I': np.arange(10),
-               'R': np.array([0]),
-               'D':np.array([0]),
-               'death_rate':np.array([0.2]),
-               'recovery_rate':np.array([0.2]),
-               'transmission_rate':np.array([0.2])},
+        parms={'S': np.array([1.0]),
+               'I': np.array([0.01]),
+               'R': np.array([0.0]),
+               'D':np.array([0.0]),
+               'death_rate':np.array([0.1]),
+               'recovery_rate':np.array([0.0]),
+               'transmission_rate':np.array([0.001])},
         days=Ndays
     )
     x.data_cases = data_cases
@@ -239,6 +247,43 @@ if __name__ == '__main__':
     x.prepare_grid()
     x.grid_search()
     xgrid = x.grid
+
+
+
+
+    fig = plt.figure()
+
+    #t = np.arange(len(data_cases))
+    #ax1.scatter(t,data_cases)
+    for i in range(1):
+
+        infected = xgrid['infected ts'].iloc[i]
+        recovered = xgrid['recovered ts'].iloc[i]
+        t = np.arange(len(infected))
+        susceptible = xgrid['susceptible ts'].iloc[i]
+        dead = xgrid['dead ts'].iloc[i]
+        t = np.arange(len(dead))
+        ax1 = fig.add_subplot(321)
+        ax1.plot(t, susceptible, label='susceptible')
+        ax1.legend()
+        ax1 = fig.add_subplot(322)
+        ax1.plot(t, infected,label='infected')
+        ax1.legend()
+        ax1 = fig.add_subplot(323)
+        ax1.plot(t, dead, label='dead')
+        ax1.legend()
+        ax1 = fig.add_subplot(324)
+        ax1.plot(t, recovered, label='recovered')
+        ax1.legend()
+        ax1 = fig.add_subplot(325)
+        all = susceptible + dead + infected + recovered
+        ax1.plot(t, all, label='ALL')
+        ax1.legend()
+
+        #ax1.plot(t, dead,label='dead')
+        #ax1.plot(t, recovered,label='recovered')
+    #plt.legend()
+    plt.show()
 
 
 
