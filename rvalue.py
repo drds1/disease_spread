@@ -17,16 +17,16 @@ if __name__ == '__main__':
     t = np.arange(365)
     today = datetime.date.today()
     dates = pd.date_range(today,periods = len(t),freq='1D')
-    annotation_fraction = 0.5
+    annotation_fraction = 50.
 
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.set_xlabel('')
-    ax1.set_ylabel('Infected fraction')
+    ax1.set_ylabel('Infected percentage reduction')
     ax1.set_title('Infected fraction reduction timescale')
     #compute the infected fraction (relative to current levels) vs time
     for rnow in r:
-        f = rnow**(t/tau)
+        f = 100*rnow**(t/tau)
         color = next(ax1._get_lines.prop_cycler)['color']
 
         #annotate plot with half lives
