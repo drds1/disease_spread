@@ -10,7 +10,7 @@ import itertools
 if __name__ == '__main__':
 
     #infectious lifetime (assume 3 weeks)
-    tau = 21.0
+    tau = 14.0
 
     #test a variety of r
     r = list(np.arange(0.5,1.0,0.1))# + [1.75]
