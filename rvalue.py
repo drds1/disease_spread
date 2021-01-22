@@ -3,7 +3,7 @@ import matplotlib.pylab as plt
 import pandas as pd
 import datetime
 import itertools
-
+#https://en.wikipedia.org/wiki/Basic_reproduction_number
 
 
 
