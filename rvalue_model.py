@@ -9,6 +9,7 @@ import corner
 import matplotlib.backends.backend_pdf
 import os
 import pickle
+import pyflux
 
 class rmodel():
     def __init__(self):
@@ -209,34 +210,13 @@ def perform_1it():
 
 if __name__ == '__main__':
 
+
+    # now try a dynamic power spectrum model
     x = rmodel()
     x.download()
     x.prep_timeseries()
-    x.prep_features(forecast_length=120)
-    x.prep_model()
-    x.prep_weights()
-    x.fit()
-    x.get_output_parms()
-    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
-                            return_figure=True,
-                            reference_date=pd.Timestamp(2020, 9, 1))
-    fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
+    rates = x.rates
 
-    # save model and figures
-    dirname = './results/rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
-    if os.path.exists(dirname) is False:
-        os.system('mkdir ' + dirname)
-    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
-    pdf.savefig(fig_plot)
-    pdf.savefig(fig_covariance)
-    pdf.close()
-    f = open(dirname + "/model.pkl", "wb")
-    pickle.dump({'model': x}, f)
-    f.close()
-
-    with open(dirname + '/model.pkl', 'rb') as handle:
-        xload = pickle.load(handle)['model']
-    f.close()
 
 
 
