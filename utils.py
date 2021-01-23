@@ -9,7 +9,8 @@ import time
 import copy
 import requests
 from datetime import datetime, timedelta, date
-import sklearn
+import sklearn.preprocessing
+import matplotlib.pylab as plt
 
 # some info on r
 #https://en.wikipedia.org/wiki/Basic_reproduction_number
@@ -31,6 +32,8 @@ timeseries = uk.iloc[:,4:].sum(axis=0)
 timeseries.index = pd.to_datetime(timeseries.index)
 rates = timeseries.diff()
 
+
+
 # isolate period of max peak to fit timeseries model
 idxpeak = rates.argmax()
 y = rates.iloc[idxpeak:].values
@@ -41,11 +44,20 @@ tfeatures = sklearn.preprocessing.PolynomialFeatures(degree=1,
                                                      include_bias=True,
                                                      order='C').fit_transform(t_fc.reshape(-1,1))
 
-dates = rates.index[idxpeak:]
-dates_fc = pd.date_range(start = dates[0], freq='1D', nperiods = len(t_fc))
+dates = rates.index
+dates_fc = pd.date_range(start = dates[idxpeak], freq='1D', periods = len(t_fc))
 # fit exponential model N = N0 R^(t/th) (log linear in y)
 yln = np.log(y)
-parms, cov = np.polyfit(t, yln, 1, w=np.ones(len(y)), cov=True)
+
+# compute error bars using running average smoothing
+window = 3
+ylnwindow = np.log(rates.iloc[idxpeak-window:].values)
+smooth = pd.Series(ylnwindow).rolling(window, win_type='triang').mean().bfill().values[window:]
+res = yln - smooth
+sd = np.ones(len(yln))*np.std(res)
+
+# perform fit using inverse square residual weights (w in polyfit configured for 1/sd NOT 1/sd^2 for gaussian weights)
+parms, cov = np.polyfit(t, yln, 1, w=1./sd, cov=True)
 
 # multisample the covariance matrix
 nsamples = 1000
@@ -56,13 +68,15 @@ y_proj = np.percentile(y_models,[25,50,75],axis=1).T
 
 
 # plot the data and overlay the models with uncertainty snakes
-ylo, ymed, yhi = y_proj[:,0], y_proj[:,1], yproj[:,2]
+ylo, ymed, yhi = y_proj[:,0], y_proj[:,1], y_proj[:,2]
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
+ax1.bar(dates, rates)
 ax1.plot(dates_fc, ylo)
 ax1.plot(dates_fc, ymed,color='b',label = 'forecast')
 ax1.fill_between(dates_fc, ylo, yhi,color='b',alpha=0.2)
+plt.show()
 
 
 
