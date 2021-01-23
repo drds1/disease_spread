@@ -1,20 +1,14 @@
 import pandas as pd
 import io
 import requests
-import calendar as cal
-import pandas as pd
 import numpy as np
-import dateutil
-import time
-import copy
 import requests
-from datetime import datetime, timedelta, date
 import sklearn.preprocessing
 import matplotlib.pylab as plt
 import corner
 import matplotlib.backends.backend_pdf
-#from matplotlib import rc
-#rc('text', usetex=True)
+import os
+import pickle
 
 class rmodel():
     def __init__(self):
@@ -176,7 +170,41 @@ class rmodel():
             plt.close()
 
 
+def perform_1it():
+    '''
+    perform 1 iteration of the model and save days results
+    :return:
+    '''
+    x = rmodel()
+    x.download()
+    x.prep_timeseries()
+    x.prep_features(forecast_length=120)
+    x.prep_model()
+    x.prep_weights()
+    x.fit()
+    x.get_output_parms()
+    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
+                            return_figure=True,
+                            reference_date=pd.Timestamp(2020, 9, 1))
+    fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
 
+    # save model and figures
+    dirname = './results/rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
+    if os.path.exists(dirname) is False:
+        os.system('mkdir ' + dirname)
+    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
+    pdf.savefig(fig_plot)
+    pdf.savefig(fig_covariance)
+    pdf.close()
+    f = open(dirname + "/model.pkl", "wb")
+    pickle.dump({'model': x}, f)
+    f.close()
+
+    # check results load correctly
+    with open(dirname + '/model.pkl', 'rb') as handle:
+        xload = pickle.load(handle)['model']
+    f.close()
+    return xload
 
 
 if __name__ == '__main__':
@@ -189,15 +217,30 @@ if __name__ == '__main__':
     x.prep_weights()
     x.fit()
     x.get_output_parms()
-    fig_plot = x.plot_model(file = 'rvalue_forecast.pdf',
-                            return_figure = True,
-                            reference_date = pd.Timestamp(2020,9,1))
-
+    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
+                            return_figure=True,
+                            reference_date=pd.Timestamp(2020, 9, 1))
     fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
-    pdf = matplotlib.backends.backend_pdf.PdfPages("rmodel_outputs.pdf")
+
+    # save model and figures
+    dirname = './results/rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
+    if os.path.exists(dirname) is False:
+        os.system('mkdir ' + dirname)
+    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
     pdf.savefig(fig_plot)
     pdf.savefig(fig_covariance)
     pdf.close()
+    f = open(dirname + "/model.pkl", "wb")
+    pickle.dump({'model': x}, f)
+    f.close()
+
+    with open(dirname + '/model.pkl', 'rb') as handle:
+        xload = pickle.load(handle)['model']
+    f.close()
+
+
+
+
 
 
 

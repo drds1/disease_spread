@@ -10,17 +10,6 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>prox0</find>
-      <find>default_trans</find>
-      <find>transmit_prob</find>
-      <find>run_mo</find>
-      <find>print</find>
-      <find>url+</find>
-      <find>norm</find>
-    </findStrings>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
