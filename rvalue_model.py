@@ -131,7 +131,7 @@ class rmodel():
                      xycoords = 'axes fraction',
                      va="top",
                      ha="left")
-        ax1.set_title('Cases by date reported')
+        ax1.set_title('Cases by date reported: '+str(pd.Timestamp.today().date()) )
         plt.xticks(rotation=45)
         ax1.legend()
         plt.tight_layout()
