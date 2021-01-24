@@ -11,13 +11,25 @@ import os
 import pickle
 
 class rmodel():
-    def __init__(self):
+    def __init__(self, url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/' \
+                   'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv',
+                 plot_title='Cases by date reported: ' + str(pd.Timestamp.today().date()),
+                 model_days = 14,
+                 model_date = None,
+                 forecast_length = 60):
         self.df_master = None
+        self.url = url
+        self.plot_title = plot_title
+        self.model_days = model_days
+        self.model_date = model_date
+        self.forecast_length = forecast_length
 
-    def download(self,
-                 url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/'
-                       'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'):
-        # Download the global timeseries data
+    def download(self):
+        '''
+
+        :return:
+        '''
+        url = self.url
         s=requests.get(url).content
         self.df_master = pd.read_csv(io.StringIO(s.decode('utf-8')))
 
@@ -33,17 +45,28 @@ class rmodel():
         self.rates = self.timeseries.diff()
 
 
-    def prep_features(self, forecast_length = 60):
+    def set_model_window(self):
+        '''
+        set the period to be modelled by the fit
+        :return:
+        '''
+        if self.model_date is not None:
+            self.idxpeak = np.where(self.rates.index >= self.model_date)[0][0]
+        else:
+            self.idxpeak = len(self.rates) - self.model_days
+
+
+    def prep_features(self):
         '''
         prep feature matrix for model fitting
         :return:
         '''
+        self.set_model_window()
         # isolate period of max peak to fit timeseries model
-        self.idxpeak = self.rates.argmax()
         self.y = self.rates.iloc[self.idxpeak:].values
         Nt = len(self.y)
         self.t = np.arange(len(self.y)) - Nt/2
-        self.t_fc = np.append(self.t,np.arange(self.t[-1]+1, self.t[-1]+forecast_length,1))
+        self.t_fc = np.append(self.t,np.arange(self.t[-1]+1, self.t[-1]+self.forecast_length,1))
         self.tfeatures = sklearn.preprocessing.PolynomialFeatures(degree=1,
                                                              interaction_only=False,
                                                              include_bias=True,
@@ -89,7 +112,7 @@ class rmodel():
     def plot_model(self,
                    file = None,
                    return_figure = True,
-                   reference_date = pd.Timestamp(2020,9,1)):
+                   reference_level = 2000):
         '''
 
         :return:
@@ -100,19 +123,20 @@ class rmodel():
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.bar(self.dates, self.rates,color='r')
-        ax1.plot(self.dates_fc, ylo)
         Rlo, Rmed, Rhi = np.percentile(self.scatter_parms[:,1],[16,50,84])
         I0lo, I0med, I0hi = np.percentile(self.scatter_parms[:,0],[16,50,84])
         ann = 'Forecast \n '+r'$I=I_0\, R^{t / \tau}$'
-        text = 'Infectious period '+r'$\tau = '+np.str(np.int(self.tau))+'$'+' days\n'+\
-               r'$R_0 = e^{m\tau} = $('+\
-               np.str(np.round(Rlo,2))+' < ' + np.str(np.round(Rmed,2))+' < '+ np.str(np.round(Rhi,2))+ ')\n' + \
-                r'$I_0 = e^{c} = $(' + \
-                np.str(np.int(I0lo)) + ' < ' + np.str(np.int(I0med)) + ' < ' + np.str(np.int(I0hi)) + ')'
+        text = 'Assumed infectious period '+r'$\tau = '+np.str(np.int(self.tau))+'$'+' days\n'+\
+               r'$R = e^{m\tau} = $('+\
+               np.str(np.round(Rlo,2))+' < ' + np.str(np.round(Rmed,2))+' < '+ np.str(np.round(Rhi,2))+ ')\n' #+ \
+                #r'$I_0 = e^{c} = $(' + \
+                #np.str(np.int(I0lo)) + ' < ' + np.str(np.int(I0med)) + ' < ' + np.str(np.int(I0hi)) + ')'
         ax1.plot(self.dates_fc, ymed,color='b',label = ann)
         ax1.fill_between(self.dates_fc, ylo, yhi,color='b',alpha=0.2)
-        yref = self.rates[self.dates > reference_date].values[0]
-        ax1.axhline(yref, label='Reference level: '+str(reference_date.date()) ,
+        idx_ref = np.where(ymed > reference_level)[0][-1]
+        date_ref = str(self.dates_fc[idx_ref].date())
+        yref = self.rates[self.rates > reference_level].values[0]
+        ax1.axhline(yref, label='Arbitrary "safe" level\n'+str(reference_level)+' cases reached by: '+date_ref,
                     color='k',ls='--')
         ax1.annotate('Model Stats: ',
                      (0.05, 0.70),
@@ -125,7 +149,7 @@ class rmodel():
                      xycoords = 'axes fraction',
                      va="top",
                      ha="left")
-        ax1.set_title('Cases by date reported: '+str(pd.Timestamp.today().date()) )
+        ax1.set_title(self.plot_title)
         plt.xticks(rotation=45)
         ax1.legend()
         plt.tight_layout()
@@ -156,18 +180,28 @@ class rmodel():
         visualise paramter covariance matrix
         :return:
         '''
-        fig = plt.figure()
         figure = corner.corner(self.scatter_parms, labels=[r"$I_0$", r"$R$"],
                                quantiles=[0.16, 0.5, 0.84],
-                               fig=fig,
                                show_titles=True, title_kwargs={"fontsize": 12})
         figure.get_axes()[2].set_ylim([-0.5, 3.5])
         figure.get_axes()[3].set_xlim([-0.5, 3.5])
         if return_figure is True:
-            return fig
+            return figure
         elif file is not None:
             plt.savefig(file)
             plt.close()
+
+
+class rmodel_govuk(rmodel):
+    def __init__(self,forecast_length = 60):
+        super().__init__(url = 'https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesBySpecimenDate&format=csv',
+                         plot_title='Cases by specimen date: ' + str(pd.Timestamp.today().date()),
+                         forecast_length = forecast_length)
+
+    def prep_timeseries(self):
+        c = self.df_master
+        c['date'] = pd.to_datetime(c['date'])
+        self.rates = c[['date', 'newCasesBySpecimenDate']].sort_values(by='date').set_index('date').iloc[:,0].astype(float)
 
 
 def perform_1it():
@@ -175,7 +209,7 @@ def perform_1it():
     perform 1 iteration of the model and save days results
     :return:
     '''
-    x = rmodel()
+    x = rmodel(model_days=21)
     x.download()
     x.prep_timeseries()
     x.prep_features(forecast_length=120)
@@ -209,17 +243,20 @@ def perform_1it():
 
 if __name__ == '__main__':
 
-    x = rmodel()
+    #x = rmodel()
+    x = rmodel_govuk(forecast_length=150)
     x.download()
     x.prep_timeseries()
-    x.prep_features(forecast_length=120)
+
+
+    x.prep_features()
     x.prep_model()
     x.prep_weights()
     x.fit()
     x.get_output_parms()
     fig_plot = x.plot_model(file='rvalue_forecast.pdf',
                             return_figure=True,
-                            reference_date=pd.Timestamp(2020, 9, 1))
+                            reference_level=1000)
     fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
 
     # save model and figures
@@ -237,6 +274,7 @@ if __name__ == '__main__':
     with open(dirname + '/model.pkl', 'rb') as handle:
         xload = pickle.load(handle)['model']
     f.close()
+
 
 
 

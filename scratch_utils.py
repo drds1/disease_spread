@@ -22,14 +22,12 @@ import matplotlib.pylab as plt
 #filename = 'data_'+str(date_today.year)+'-'+monthsstr[date_today.month]+'-'+str(date_today.day)+'.csv'
 
 # Download the global timeseries data
-url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
+#url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
+url = 'https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesBySpecimenDate&format=csv'
 s=requests.get(url).content
 c=pd.read_csv(io.StringIO(s.decode('utf-8')))
-
-# isolate UK data
-uk = c[c['Country/Region'] == 'United Kingdom']
-timeseries = uk.iloc[:,4:].sum(axis=0)
-timeseries.index = pd.to_datetime(timeseries.index)
+c['date'] = pd.to_datetime(c['date'])
+timeseries = c[['date','newCasesBySpecimenDate']].sort_values(by='date').set_index('date')
 rates = timeseries.diff()
 
 
