@@ -3,3 +3,4 @@ scikit-learn
 matplotlib
 numpy
 git+https://github.com/RJT1990/pyflux
+pandas_datareader
