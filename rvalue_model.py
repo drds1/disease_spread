@@ -10,6 +10,8 @@ import matplotlib.backends.backend_pdf
 import os
 import pickle
 #import pyflux
+from pydlm import dlm, trend
+
 np.random.seed(12345)
 
 class rmodel():
@@ -250,6 +252,52 @@ def perform_1it():
         xload = pickle.load(handle)['model']
     f.close()
     return xload
+
+
+
+
+class rmodel_govuk_dlm(rmodel_govuk):
+    def __init__(self,
+                 forecast_length = 60,
+                 model_date = pd.Timestamp(2020,9,1),
+                 discount_incomplete_days = 4):
+        super().__init__(url = 'https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesBySpecimenDate&format=csv',
+                         plot_title='Cases by specimen date: ' + str(pd.Timestamp.today().date()),
+                         forecast_length = forecast_length,
+                         model_days = None,
+                         model_date = model_date)
+        self.discount_incomplete_days = discount_incomplete_days
+
+    def fit(self, nsamples = 5000):
+        '''
+
+        :return:
+        '''
+        myDLM = dlm(self.yln)
+        myDLM = myDLM + trend(degree=1, discount=0.95, name='trend1')
+        myDLM.fit()
+
+        ###INCOMPLETE HOW TO DEAL WITH UNCERTAINTIES!!!!
+        coef = np.array(myDLM.getLatentState())
+        results = np.array(myDLM.result.predictedObs)[:, 0, 0]
+        results_var = np.array(myDLM.result.predictedObsVar)[:, 0, 0]
+
+        # perform fit using inverse square residual weights (w in polyfit configured for 1/sd NOT 1/sd^2 for gaussian weights)
+        self.parms, self.cov = np.polyfit(self.t, self.yln, 1, w=1./self.sd, cov=True)
+        self.parms = self.parms[-1::-1]
+        self.cov = self.cov.T
+
+        # multisample the covariance matrix
+        self.parms_multisample = np.random.multivariate_normal(self.parms,self.cov, nsamples).T
+        yln_models = np.matmul(self.tfeatures,self.parms_multisample)
+        y_models = np.exp(yln_models)
+        self.y_proj = np.percentile(y_models,[25,50,75],axis=1).T
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

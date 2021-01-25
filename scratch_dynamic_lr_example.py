@@ -16,15 +16,15 @@ results = np.array(myDLM.result.predictedObs)[:,0,0]
 results_var = np.array(myDLM.result.predictedObsVar )[:,0,0]
 
 
-import matplotlib.pylab as plt
-#fig = plt.figure()
-#ax1 = fig.add_subplot(311)
-#ax1.plot(coef[:,0])
-#ax2 = fig.add_subplot(312)
-#ax2.plot(coef[:,1])
-#ax3 = fig.add_subplot(313)
-#ax3.plot(results)
-#plt.show()
+fig = plt.figure()
+ax1 = fig.add_subplot(311)
+ax1.plot(coef[:,0])
+ax2 = fig.add_subplot(312)
+ax2.plot(coef[:,1])
+ax3 = fig.add_subplot(313)
+ax3.plot(results)
+ax3.plot(data,marker='o',ls='')
+plt.savefig('scratch_result.pdf')
 
 
 
