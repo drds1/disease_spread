@@ -10,6 +10,7 @@ import matplotlib.backends.backend_pdf
 import os
 import pickle
 #import pyflux
+np.random.seed(12345)
 
 class rmodel():
     def __init__(self, url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/' \
@@ -80,6 +81,7 @@ class rmodel():
         '''
         self.dates = self.rates.index
         self.dates_fc = pd.date_range(start = self.dates[self.idxpeak], freq='1D', periods = len(self.t_fc))
+        self.dates_modeled = self.dates_fc[:len(self.y)]
         # fit exponential model N = N0 R^(t/th) (log linear in y)
         self.yln = np.log(self.y)
 
@@ -94,7 +96,7 @@ class rmodel():
         self.res = self.yln - self.smooth
         self.sd = np.ones(len(self.yln))*np.std(self.res)
 
-    def fit(self, nsamples = 1000):
+    def fit(self, nsamples = 5000):
         '''
 
         :return:
@@ -129,7 +131,8 @@ class rmodel():
         ann = 'Forecast \n '+r'$I=I_0\, R^{t / \tau}$'
         text = 'Assumed infectious period '+r'$\tau = '+np.str(np.int(self.tau))+'$'+' days\n'+\
                r'$R = e^{m\tau} = $('+\
-               np.str(np.round(Rlo,2))+' < ' + np.str(np.round(Rmed,2))+' < '+ np.str(np.round(Rhi,2))+ ')\n' #+ \
+               np.str(np.round(Rlo,2))+' < ' + np.str(np.round(Rmed,2))+' < '+ np.str(np.round(Rhi,2))+ ')\n' + \
+               'Model period: '+str(self.dates_modeled[0].date())+' --> '+str(self.dates_modeled[-1].date())
                 #r'$I_0 = e^{c} = $(' + \
                 #np.str(np.int(I0lo)) + ' < ' + np.str(np.int(I0med)) + ' < ' + np.str(np.int(I0hi)) + ')'
         ax1.plot(self.dates_fc, ymed,color='b',label = ann)
@@ -194,13 +197,20 @@ class rmodel():
 
 
 class rmodel_govuk(rmodel):
-    def __init__(self,forecast_length = 60):
+    def __init__(self,forecast_length = 60,
+                 model_days = 14,
+                 model_date = None,
+                 discount_incomplete_days = 4):
         super().__init__(url = 'https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesBySpecimenDate&format=csv',
                          plot_title='Cases by specimen date: ' + str(pd.Timestamp.today().date()),
-                         forecast_length = forecast_length)
+                         forecast_length = forecast_length,
+                         model_days = model_days,
+                         model_date = model_date)
+        self.discount_incomplete_days = discount_incomplete_days
 
     def prep_timeseries(self):
         c = self.df_master
+        c = c[self.discount_incomplete_days:]
         c['date'] = pd.to_datetime(c['date'])
         self.rates = c[['date', 'newCasesBySpecimenDate']].sort_values(by='date').set_index('date').iloc[:,0].astype(float)
 
@@ -246,7 +256,7 @@ if __name__ == '__main__':
 
 
     #x = rmodel()
-    x = rmodel_govuk(forecast_length=150)
+    x = rmodel_govuk(model_days=21,forecast_length=150)
     x.download()
     x.prep_timeseries()
 

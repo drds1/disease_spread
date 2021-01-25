@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ed0946e0-b84f-4328-9c6c-4eabb04a60a7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/results/rvalue_model_2021_01_25/model.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/results/rvalue_model_2021_01_25/model.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/results/rvalue_model_2021_01_25/rmodel_outputs.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/results/rvalue_model_2021_01_25/rmodel_outputs.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rvalue_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/rvalue_model.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -38,7 +40,8 @@
       <option name="presentableId" value="Default" />
       <updated>1585403397977</updated>
       <workItem from="1611337989713" duration="1687000" />
-      <workItem from="1611499768511" duration="9630000" />
+      <workItem from="1611499768511" duration="9731000" />
+      <workItem from="1611596962883" duration="1130000" />
     </task>
     <servers />
   </component>
