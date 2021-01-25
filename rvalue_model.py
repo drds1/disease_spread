@@ -217,6 +217,42 @@ class rmodel_govuk(rmodel):
         self.rates = c[['date', 'newCasesBySpecimenDate']].sort_values(by='date').set_index('date').iloc[:,0].astype(float)
 
 
+
+def run_govukmodel():
+    '''
+
+    :return:
+    '''
+    x = rmodel_govuk(model_days=21, forecast_length=150)
+    x.download()
+    x.prep_timeseries()
+
+    x.prep_features()
+    x.prep_model()
+    x.prep_weights()
+
+    x.fit()
+    x.get_output_parms()
+    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
+                            return_figure=True,
+                            reference_level=1000)
+    fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
+
+    # save model and figures
+    dirname = './results/rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
+    if os.path.exists(dirname) is False:
+        os.system('mkdir ' + dirname)
+    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
+    pdf.savefig(fig_plot)
+    pdf.savefig(fig_covariance)
+    pdf.close()
+    f = open(dirname + "/model.pkl", "wb")
+    pickle.dump({'model': x}, f)
+    f.close()
+
+
+
+
 def perform_1it():
     '''
     perform 1 iteration of the model and save days results
@@ -261,9 +297,7 @@ class rmodel_govuk_dlm(rmodel_govuk):
                  forecast_length = 60,
                  model_date = pd.Timestamp(2020,9,1),
                  discount_incomplete_days = 4):
-        super().__init__(url = 'https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesBySpecimenDate&format=csv',
-                         plot_title='Cases by specimen date: ' + str(pd.Timestamp.today().date()),
-                         forecast_length = forecast_length,
+        super().__init__(forecast_length = forecast_length,
                          model_days = None,
                          model_date = model_date)
         self.discount_incomplete_days = discount_incomplete_days
@@ -277,34 +311,64 @@ class rmodel_govuk_dlm(rmodel_govuk):
         myDLM = myDLM + trend(degree=1, discount=0.95, name='trend1')
         myDLM.fit()
 
-        ###INCOMPLETE HOW TO DEAL WITH UNCERTAINTIES!!!!
-        coef = np.array(myDLM.getLatentState())
         results = np.array(myDLM.result.predictedObs)[:, 0, 0]
         results_var = np.array(myDLM.result.predictedObsVar)[:, 0, 0]
+        predicted, predicted_var = myDLM.predictN(self.forecast_length, myDLM.n - 1)
 
-        # perform fit using inverse square residual weights (w in polyfit configured for 1/sd NOT 1/sd^2 for gaussian weights)
-        self.parms, self.cov = np.polyfit(self.t, self.yln, 1, w=1./self.sd, cov=True)
-        self.parms = self.parms[-1::-1]
-        self.cov = self.cov.T
+        ###INCOMPLETE HOW TO DEAL WITH UNCERTAINTIES!!!!
+        coef = np.array(myDLM.getLatentState())
+        cov = myDLM.result.smoothedCov
 
-        # multisample the covariance matrix
-        self.parms_multisample = np.random.multivariate_normal(self.parms,self.cov, nsamples).T
-        yln_models = np.matmul(self.tfeatures,self.parms_multisample)
+        yln_all = np.append(results, predicted)
+        yln_all_var = np.append(results_var, predicted_var)
+        nall = len(yln_all)
+        yln_models = np.random.randn(nall, nsamples) * \
+                     np.tile(np.sqrt(yln_all_var), nsamples).reshape(nall,nsamples) + \
+                     np.tile(yln_all, nsamples).reshape(nall, nsamples)
         y_models = np.exp(yln_models)
-        self.y_proj = np.percentile(y_models,[25,50,75],axis=1).T
+        self.y_proj = np.percentile(y_models, [25, 50, 75], axis=1).T
 
 
+    def plot_model(self,
+                   file = None,
+                   return_figure = True,
+                   reference_level = 2000):
+        '''
 
-
-
-
+        :return:
+        '''
+        # plot the data and overlay the models with uncertainty snakes
+        ylo, ymed, yhi = self.y_proj[:,0], self.y_proj[:,1], self.y_proj[:,2]
+        plt.close()
+        fig = plt.figure()
+        ax1 = fig.add_subplot(211)
+        ax1.bar(self.dates, self.rates,color='r')
+        ann = 'Forecast \n '+r'$I=I_0\, R^{t / \tau}$'
+        ax1.plot(self.dates_fc, ymed,color='b',label = ann)
+        ax1.fill_between(self.dates_fc, ylo, yhi,color='b',alpha=0.2)
+        idx_ref = np.where(ymed > reference_level)[0][-1]
+        date_ref = str(self.dates_fc[idx_ref].date())
+        yref = self.rates[self.rates > reference_level].values[0]
+        ax1.axhline(yref,
+                    label='Arbitrary "safe" level\n'+str(reference_level)+' cases reached by: '+date_ref,
+                    color='k',ls='--')
+        ax1.set_title(self.plot_title)
+        plt.xticks(rotation=45)
+        ax1.legend()
+        plt.tight_layout()
+        if return_figure is True:
+            return fig
+        elif file is not None:
+            plt.savefig(file)
+            plt.close()
 
 
 if __name__ == '__main__':
 
-
-    #x = rmodel()
-    x = rmodel_govuk(model_days=21,forecast_length=150)
+    #x = run_govukmodel()
+    x = rmodel_govuk_dlm(model_date = pd.Timestamp(2020,9,1),
+                         discount_incomplete_days = 4,
+                         forecast_length=150)
     x.download()
     x.prep_timeseries()
 
@@ -312,24 +376,29 @@ if __name__ == '__main__':
     x.prep_features()
     x.prep_model()
     x.prep_weights()
-    x.fit()
-    x.get_output_parms()
-    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
-                            return_figure=True,
-                            reference_level=1000)
-    fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
 
-    # save model and figures
-    dirname = './results/rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
-    if os.path.exists(dirname) is False:
-        os.system('mkdir ' + dirname)
-    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
-    pdf.savefig(fig_plot)
-    pdf.savefig(fig_covariance)
-    pdf.close()
-    f = open(dirname + "/model.pkl", "wb")
-    pickle.dump({'model': x}, f)
-    f.close()
+    myDLM = dlm(x.yln)
+    myDLM = myDLM + trend(degree=1, discount=0.95, name='trend1')
+    myDLM.fit()
+
+    results = np.array(myDLM.result.predictedObs)[:, 0, 0]
+    results_var = np.array(myDLM.result.predictedObsVar)[:, 0, 0]
+    predicted, predicted_var = myDLM.predictN(x.forecast_length,myDLM.n - 1)
+
+    ###INCOMPLETE HOW TO DEAL WITH UNCERTAINTIES!!!!
+    coef = np.array(myDLM.getLatentState())
+    cov = myDLM.result.smoothedCov
+
+    nsamples = 5000
+    yln_all = np.append(results, predicted)
+    yln_all_var = np.append(results_var, predicted_var)
+    nall = len(yln_all)
+    yln_models = np.random.randn(nall,nsamples) * np.tile(np.sqrt(yln_all_var), nsamples).reshape(nall,nsamples) + np.tile(yln_all, nsamples).reshape(nall,nsamples)
+    y_models = np.exp(yln_models)
+    y_proj = np.percentile(y_models, [25, 50, 75], axis=1).T
+
+
+
 
 
 
