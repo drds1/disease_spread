@@ -308,7 +308,7 @@ class rmodel_govuk_dlm(rmodel_govuk):
         :return:
         '''
         myDLM = dlm(self.yln)
-        myDLM = myDLM + trend(degree=1, discount=0.95, name='trend1')
+        myDLM = myDLM + trend(degree=1, discount=0.9, name='trend1')
         myDLM.fit()
 
         results = np.array(myDLM.result.predictedObs)[:, 0, 0]
