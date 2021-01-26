@@ -170,7 +170,7 @@ class rmodel():
         convert the log exponential fit to I0 and R parameters
         :return:
         '''
-        parms, cov, parms_multisample = x.parms, x.cov, x.parms_multisample
+        parms, cov, parms_multisample = self.parms, self.cov, self.parms_multisample
         # set infection lifetime
         # and convert gradient parameter to R-value
         self.tau = tau
@@ -365,7 +365,9 @@ class rmodel_govuk_dlm(rmodel_govuk):
 
 if __name__ == '__main__':
 
-    #x = run_govukmodel()
+    x = run_govukmodel()
+
+    '''
     x = rmodel_govuk_dlm(model_date = pd.Timestamp(2020,9,1),
                          discount_incomplete_days = 4,
                          forecast_length=150)
@@ -396,6 +398,7 @@ if __name__ == '__main__':
     yln_models = np.random.randn(nall,nsamples) * np.tile(np.sqrt(yln_all_var), nsamples).reshape(nall,nsamples) + np.tile(yln_all, nsamples).reshape(nall,nsamples)
     y_models = np.exp(yln_models)
     y_proj = np.percentile(y_models, [25, 50, 75], axis=1).T
+    '''
 
 
 
