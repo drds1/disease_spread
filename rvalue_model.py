@@ -313,11 +313,12 @@ class rmodel_govuk_dlm(rmodel_govuk):
 
         results = np.array(myDLM.result.predictedObs)[:, 0, 0]
         results_var = np.array(myDLM.result.predictedObsVar)[:, 0, 0]
-        predicted, predicted_var = myDLM.predictN(self.forecast_length, myDLM.n - 1)
+        predicted, predicted_var = myDLM.predictN(self.forecast_length-1, myDLM.n - 1)
 
         ###INCOMPLETE HOW TO DEAL WITH UNCERTAINTIES!!!!
         coef = np.array(myDLM.getLatentState())
         cov = myDLM.result.smoothedCov
+        self.myDLM = myDLM
 
         yln_all = np.append(results, predicted)
         yln_all_var = np.append(results_var, predicted_var)
@@ -327,6 +328,30 @@ class rmodel_govuk_dlm(rmodel_govuk):
                      np.tile(yln_all, nsamples).reshape(nall, nsamples)
         y_models = np.exp(yln_models)
         self.y_proj = np.percentile(y_models, [25, 50, 75], axis=1).T
+        self.cov = cov
+        self.coef = coef
+
+    def get_output_parms(self, tau = 14):
+        '''
+        convert the log exponential fit to I0 and R parameters
+        :return:
+        '''
+        ###INCOMPLETE HOW TO DEAL WITH UNCERTAINTIES!!!!
+        coef = self.coef
+        cov = self.cov
+
+        ## simulate errorbars on parameters
+        parms_multisample = []
+        for idx in range(len(cov)):
+            covnow = cov[idx]
+            pnow = coef[idx, :]
+            parms_multisample.append(np.random.multivariate_normal(pnow, covnow, 1000))
+        self.parms_multisample = np.array(parms_multisample)
+        gradient = self.parms_multisample[:, :, 1]
+        self.output_R = np.exp(gradient * tau)
+        self.output_R_percentile = np.percentile(self.output_R, [25, 50, 75], axis=1)
+        self.output_I0 = np.exp(self.parms_multisample[:, :, 0])
+        self.output_I0_percentile = np.percentile(self.output_I0, [25, 50, 75], axis=1)
 
 
     def plot_model(self,
@@ -355,6 +380,20 @@ class rmodel_govuk_dlm(rmodel_govuk):
         ax1.set_title(self.plot_title)
         plt.xticks(rotation=45)
         ax1.legend()
+
+        #plot the dynamic R value
+        ax2 = fig.add_subplot(212)
+        xt = self.dates_fc[:len(self.output_R)]
+        ax2.plot(xt, self.output_R_percentile[1,:],
+                 color='b')
+        ax2.fill_between(xt,
+                         self.output_R_percentile[0,:],
+                         self.output_R_percentile[2,:],
+                         alpha = 0.2,color='b')
+        ax2.set_title('Dynamic R Estimate')
+        ax2.set_xlim(ax1.get_xlim())
+        plt.xticks(rotation=45)
+
         plt.tight_layout()
         if return_figure is True:
             return fig
@@ -365,9 +404,9 @@ class rmodel_govuk_dlm(rmodel_govuk):
 
 if __name__ == '__main__':
 
-    x = run_govukmodel()
+    #x = run_govukmodel()
 
-    '''
+
     x = rmodel_govuk_dlm(model_date = pd.Timestamp(2020,9,1),
                          discount_incomplete_days = 4,
                          forecast_length=150)
@@ -378,40 +417,23 @@ if __name__ == '__main__':
     x.prep_features()
     x.prep_model()
     x.prep_weights()
+    x.fit()
+    x.get_output_parms()
 
-    myDLM = dlm(x.yln)
-    myDLM = myDLM + trend(degree=1, discount=0.95, name='trend1')
-    myDLM.fit()
+    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
+                            return_figure=True)
+                            #reference_date=pd.Timestamp(2020, 9, 1))
+    #fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
 
-    results = np.array(myDLM.result.predictedObs)[:, 0, 0]
-    results_var = np.array(myDLM.result.predictedObsVar)[:, 0, 0]
-    predicted, predicted_var = myDLM.predictN(x.forecast_length,myDLM.n - 1)
-
-    ###INCOMPLETE HOW TO DEAL WITH UNCERTAINTIES!!!!
-    coef = np.array(myDLM.getLatentState())
-    cov = myDLM.result.smoothedCov
-
-    nsamples = 5000
-    yln_all = np.append(results, predicted)
-    yln_all_var = np.append(results_var, predicted_var)
-    nall = len(yln_all)
-    yln_models = np.random.randn(nall,nsamples) * np.tile(np.sqrt(yln_all_var), nsamples).reshape(nall,nsamples) + np.tile(yln_all, nsamples).reshape(nall,nsamples)
-    y_models = np.exp(yln_models)
-    y_proj = np.percentile(y_models, [25, 50, 75], axis=1).T
-    '''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # save model and figures
+    dirname = './results/dynamic_rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
+    if os.path.exists(dirname) is False:
+        os.system('mkdir ' + dirname)
+    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
+    pdf.savefig(fig_plot)
+    #pdf.savefig(fig_covariance)
+    pdf.close()
+    f = open(dirname + "/model.pkl", "wb")
+    pickle.dump({'model': x}, f)
+    f.close()
 
