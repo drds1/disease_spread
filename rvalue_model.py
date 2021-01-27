@@ -404,9 +404,9 @@ class rmodel_govuk_dlm(rmodel_govuk):
 
 if __name__ == '__main__':
 
-    #x = run_govukmodel()
+    x = run_govukmodel()
 
-
+    '''
     x = rmodel_govuk_dlm(model_date = pd.Timestamp(2020,9,1),
                          discount_incomplete_days = 4,
                          forecast_length=150)
@@ -436,4 +436,5 @@ if __name__ == '__main__':
     f = open(dirname + "/model.pkl", "wb")
     pickle.dump({'model': x}, f)
     f.close()
+    '''
 
