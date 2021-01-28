@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ed0946e0-b84f-4328-9c6c-4eabb04a60a7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rvalue_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/rvalue_model.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +44,7 @@
       <workItem from="1611695354123" duration="2796000" />
       <workItem from="1611699329187" duration="794000" />
       <workItem from="1611736067014" duration="26000" />
-      <workItem from="1611784125093" duration="52000" />
+      <workItem from="1611784125093" duration="395000" />
     </task>
     <servers />
   </component>
