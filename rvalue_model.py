@@ -263,16 +263,19 @@ class rmodel_govuk(rmodel):
         :return:
         '''
         fig = plt.figure()
-        gs = gridspec.GridSpec(4, 2)
-        ax1 = fig.add_subplot(gs[1:-1, :])
+        gs = gridspec.GridSpec(5, 2)
+        gs.update(hspace=0.05)  # set the spacing between axes.
+
+        ax1 = fig.add_subplot(gs[:-2, :])
         fig, ax1 = self.plot_model(file=None,
                    return_figure=True,
                    figin=fig,
                    axin=ax1,
                    reference_level=reference_level)
+        ax1.set_xticklabels('')
 
         #make running R plot
-        ax2 = fig.add_subplot(gs[-1, :])
+        ax2 = fig.add_subplot(gs[-2:, :])
         ax2.plot(self.multi_date_r,self.multi_r_r,label='rolling R calculation')
         ax2.fill_between(self.multi_date_r,
                          self.multi_r_r - self.multi_r_sd,
@@ -280,7 +283,7 @@ class rmodel_govuk(rmodel):
                          color='b',alpha=0.2)
         ax2.set_xlim(ax1.get_xlim())
         ax2.set_title('Rolling R Calculation')
-        ax2.set_xticklabels('')
+        plt.xticks(rotation=45)
         plt.tight_layout()
         return fig
 
