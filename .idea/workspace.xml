@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ed0946e0-b84f-4328-9c6c-4eabb04a60a7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rvalue_forecast.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/rvalue_forecast.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rvalue_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/rvalue_model.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,6 +47,7 @@
       <workItem from="1611699329187" duration="794000" />
       <workItem from="1611736067014" duration="26000" />
       <workItem from="1611784125093" duration="395000" />
+      <workItem from="1611852222841" duration="5627000" />
     </task>
     <servers />
   </component>
@@ -52,9 +55,10 @@
     <option name="version" value="2" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="25" y="163" width="670" height="676" key="search.everywhere.popup" timestamp="1611501070133">
-      <screen x="0" y="25" width="1440" height="814" />
+    <state x="25" y="163" width="670" height="677" key="search.everywhere.popup" timestamp="1611869875912">
+      <screen x="0" y="25" width="1440" height="815" />
     </state>
     <state x="25" y="163" width="670" height="676" key="search.everywhere.popup/0.25.1440.814@0.25.1440.814" timestamp="1611501070133" />
+    <state x="25" y="163" width="670" height="677" key="search.everywhere.popup/0.25.1440.815@0.25.1440.815" timestamp="1611869875912" />
   </component>
 </project>

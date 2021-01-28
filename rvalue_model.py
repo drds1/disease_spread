@@ -11,6 +11,8 @@ import os
 import pickle
 #import pyflux
 from pydlm import dlm, trend
+import matplotlib.gridspec as gridspec
+
 
 np.random.seed(12345)
 
@@ -117,6 +119,8 @@ class rmodel():
     def plot_model(self,
                    file = None,
                    return_figure = True,
+                   figin = None,
+                   axin=None,
                    reference_level = 2000):
         '''
 
@@ -124,9 +128,12 @@ class rmodel():
         '''
         # plot the data and overlay the models with uncertainty snakes
         ylo, ymed, yhi = self.y_proj[:,0], self.y_proj[:,1], self.y_proj[:,2]
-        plt.close()
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
+        if axin is None and figin is None:
+            fig = plt.figure()
+            ax1 = fig.add_subplot(111)
+        else:
+            fig = figin
+            ax1 = axin
         ax1.bar(self.dates, self.rates,color='r')
         Rlo, Rmed, Rhi = np.percentile(self.scatter_parms[:,1],[16,50,84])
         I0lo, I0med, I0hi = np.percentile(self.scatter_parms[:,0],[16,50,84])
@@ -159,11 +166,13 @@ class rmodel():
         plt.xticks(rotation=45)
         ax1.legend()
         plt.tight_layout()
-        if return_figure is True:
+        if axin is not None and figin is not None:
+            return fig, ax1
+        elif return_figure is True:
             return fig
         elif file is not None:
             plt.savefig(file)
-            plt.close()
+
 
     def get_output_parms(self, tau = 14):
         '''
@@ -216,78 +225,66 @@ class rmodel_govuk(rmodel):
         c['date'] = pd.to_datetime(c['date'])
         self.rates = c[['date', 'newCasesBySpecimenDate']].sort_values(by='date').set_index('date').iloc[:,0].astype(float)
 
+    def multi_run(self,min_date = pd.Timestamp(2020,3,15)):
+        '''
+        run a rolling day set of predictions to get R value throughout pandemic
+        :return:
+        '''
+        df_master = self.df_master.copy()
+        df_master['date'] = pd.to_datetime(df_master['date'])
+        end_date = df_master['date'].iloc[0]
+        dates_running = pd.date_range(start = min_date,
+                                      end = end_date,
+                                      freq = '1D')
+        model_days = 20
+        multi_date_r = []
+        multi_r_r = []
+        multi_r_sd = []
+        for date in list(dates_running):
+            x1 = rmodel_govuk(model_days=model_days, forecast_length=150)
+            x1.df_master = df_master.loc[df_master['date'] <= date]
+            x1.prep_timeseries()
+            x1.prep_features()
+            x1.prep_model()
+            x1.prep_weights()
+            x1.fit()
+            x1.get_output_parms()
+            x1r = np.percentile(x1.scatter_parms[:,1],[16,50,84])
+            multi_date_r.append(date - pd.Timedelta(str(model_days / 2) + 'D'))
+            multi_r_r.append(x1r[1])
+            multi_r_sd.append(0.5*(x1r[2]-x1r[0]))
+        self.multi_r_r = np.array(multi_r_r)
+        self.multi_r_sd = np.array(multi_r_sd)
+        self.multi_date_r = pd.Series(multi_date_r)
+
+    def plot_multi(self,reference_level=2000):
+        '''
+        overplot the rolling r estimate
+        :return:
+        '''
+        fig = plt.figure()
+        gs = gridspec.GridSpec(4, 2)
+        ax1 = fig.add_subplot(gs[1:-1, :])
+        fig, ax1 = self.plot_model(file=None,
+                   return_figure=True,
+                   figin=fig,
+                   axin=ax1,
+                   reference_level=reference_level)
+
+        #make running R plot
+        ax2 = fig.add_subplot(gs[-1, :])
+        ax2.plot(self.multi_date_r,self.multi_r_r,label='rolling R calculation')
+        ax2.fill_between(self.multi_date_r,
+                         self.multi_r_r - self.multi_r_sd,
+                         self.multi_r_r + self.multi_r_sd,
+                         color='b',alpha=0.2)
+        ax2.set_xlim(ax1.get_xlim())
+        ax2.set_title('Rolling R Calculation')
+        ax2.set_xticklabels('')
+        plt.tight_layout()
+        return fig
 
 
-def run_govukmodel():
-    '''
-
-    :return:
-    '''
-    x = rmodel_govuk(model_days=21, forecast_length=150)
-    x.download()
-    x.prep_timeseries()
-
-    x.prep_features()
-    x.prep_model()
-    x.prep_weights()
-
-    x.fit()
-    x.get_output_parms()
-    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
-                            return_figure=True,
-                            reference_level=1000)
-    fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
-
-    # save model and figures
-    dirname = './results/rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
-    if os.path.exists(dirname) is False:
-        os.system('mkdir ' + dirname)
-    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
-    pdf.savefig(fig_plot)
-    pdf.savefig(fig_covariance)
-    pdf.close()
-    f = open(dirname + "/model.pkl", "wb")
-    pickle.dump({'model': x}, f)
-    f.close()
-
-
-
-
-def perform_1it():
-    '''
-    perform 1 iteration of the model and save days results
-    :return:
-    '''
-    x = rmodel(model_days=21)
-    x.download()
-    x.prep_timeseries()
-    x.prep_features(forecast_length=120)
-    x.prep_model()
-    x.prep_weights()
-    x.fit()
-    x.get_output_parms()
-    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
-                            return_figure=True,
-                            reference_date=pd.Timestamp(2020, 9, 1))
-    fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
-
-    # save model and figures
-    dirname = './results/rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
-    if os.path.exists(dirname) is False:
-        os.system('mkdir ' + dirname)
-    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
-    pdf.savefig(fig_plot)
-    pdf.savefig(fig_covariance)
-    pdf.close()
-    f = open(dirname + "/model.pkl", "wb")
-    pickle.dump({'model': x}, f)
-    f.close()
-
-    # check results load correctly
-    with open(dirname + '/model.pkl', 'rb') as handle:
-        xload = pickle.load(handle)['model']
-    f.close()
-    return xload
 
 
 
@@ -402,39 +399,120 @@ class rmodel_govuk_dlm(rmodel_govuk):
             plt.close()
 
 
+
+
+
+def run_govukmodel():
+    '''
+
+    :return:
+    '''
+    x = rmodel_govuk(model_days=21, forecast_length=150)
+    x.download()
+    x.prep_timeseries()
+
+    x.prep_features()
+    x.prep_model()
+    x.prep_weights()
+
+    x.fit()
+    x.get_output_parms()
+    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
+                            return_figure=True,
+                            reference_level=1000)
+    fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
+
+    # save model and figures
+    dirname = './results/rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
+    if os.path.exists(dirname) is False:
+        os.system('mkdir ' + dirname)
+    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
+    pdf.savefig(fig_plot)
+    pdf.savefig(fig_covariance)
+    pdf.close()
+    f = open(dirname + "/model.pkl", "wb")
+    pickle.dump({'model': x}, f)
+    f.close()
+
+
+
+
+def perform_1it():
+    '''
+    perform 1 iteration of the model and save days results
+    :return:
+    '''
+    x = rmodel(model_days=21)
+    x.download()
+    x.prep_timeseries()
+    x.prep_features(forecast_length=120)
+    x.prep_model()
+    x.prep_weights()
+    x.fit()
+    x.get_output_parms()
+    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
+                            return_figure=True,
+                            reference_date=pd.Timestamp(2020, 9, 1))
+    fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
+
+    # save model and figures
+    dirname = './results/rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
+    if os.path.exists(dirname) is False:
+        os.system('mkdir ' + dirname)
+    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
+    pdf.savefig(fig_plot)
+    pdf.savefig(fig_covariance)
+    pdf.close()
+    f = open(dirname + "/model.pkl", "wb")
+    pickle.dump({'model': x}, f)
+    f.close()
+
+    # check results load correctly
+    with open(dirname + '/model.pkl', 'rb') as handle:
+        xload = pickle.load(handle)['model']
+    f.close()
+    return xload
+
+
+
 if __name__ == '__main__':
 
-    x = run_govukmodel()
+    #x = run_govukmodel()
 
-    '''
-    x = rmodel_govuk_dlm(model_date = pd.Timestamp(2020,9,1),
-                         discount_incomplete_days = 4,
-                         forecast_length=150)
+
+    x = rmodel_govuk(model_days=21,
+                     discount_incomplete_days = 4,
+                     forecast_length=150)
     x.download()
+
     x.prep_timeseries()
 
 
     x.prep_features()
     x.prep_model()
     x.prep_weights()
+    x.multi_run(min_date=pd.Timestamp(2020, 6, 15))
     x.fit()
     x.get_output_parms()
+#
+    plt.close()
+    fig_plot = x.plot_multi(reference_level=2000)
+    plt.savefig('rvalue_forecast.pdf')
 
-    fig_plot = x.plot_model(file='rvalue_forecast.pdf',
-                            return_figure=True)
+
                             #reference_date=pd.Timestamp(2020, 9, 1))
-    #fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
+    ##fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
+#
+    ## save model and figures
+    #dirname = './results/dynamic_rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
+    #if os.path.exists(dirname) is False:
+    #    os.system('mkdir ' + dirname)
+    #pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
+    #pdf.savefig(fig_plot)
+    ##pdf.savefig(fig_covariance)
+    #pdf.close()
+    #f = open(dirname + "/model.pkl", "wb")
+    #pickle.dump({'model': x}, f)
+    #f.close()
 
-    # save model and figures
-    dirname = './results/dynamic_rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
-    if os.path.exists(dirname) is False:
-        os.system('mkdir ' + dirname)
-    pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
-    pdf.savefig(fig_plot)
-    #pdf.savefig(fig_covariance)
-    pdf.close()
-    f = open(dirname + "/model.pkl", "wb")
-    pickle.dump({'model': x}, f)
-    f.close()
-    '''
 
