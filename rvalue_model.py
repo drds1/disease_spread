@@ -480,9 +480,9 @@ def perform_1it():
 
 if __name__ == '__main__':
 
-    x = run_govukmodel()
 
-    '''
+
+
     x = rmodel_govuk(model_days=21,
                      discount_incomplete_days = 4,
                      forecast_length=150)
@@ -501,7 +501,7 @@ if __name__ == '__main__':
     plt.close()
     fig_plot = x.plot_multi(reference_level=2000)
     plt.savefig('rvalue_forecast.pdf')
-    '''
+
 
 
 
