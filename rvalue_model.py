@@ -480,9 +480,9 @@ def perform_1it():
 
 if __name__ == '__main__':
 
-    #x = run_govukmodel()
+    x = run_govukmodel()
 
-
+    '''
     x = rmodel_govuk(model_days=21,
                      discount_incomplete_days = 4,
                      forecast_length=150)
@@ -501,21 +501,8 @@ if __name__ == '__main__':
     plt.close()
     fig_plot = x.plot_multi(reference_level=2000)
     plt.savefig('rvalue_forecast.pdf')
+    '''
 
 
-                            #reference_date=pd.Timestamp(2020, 9, 1))
-    ##fig_covariance = x.plot_covariance(file='covariance_plot.pdf', return_figure=True)
-#
-    ## save model and figures
-    #dirname = './results/dynamic_rvalue_model_' + str(pd.Timestamp.today().date()).replace('-', '_')
-    #if os.path.exists(dirname) is False:
-    #    os.system('mkdir ' + dirname)
-    #pdf = matplotlib.backends.backend_pdf.PdfPages(dirname + "/rmodel_outputs.pdf")
-    #pdf.savefig(fig_plot)
-    ##pdf.savefig(fig_covariance)
-    #pdf.close()
-    #f = open(dirname + "/model.pkl", "wb")
-    #pickle.dump({'model': x}, f)
-    #f.close()
 
 
