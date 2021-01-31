@@ -23,14 +23,14 @@ In reality, an individual is unlikely to be equally as infectious throughout the
 
 ## Model Data Selection
 
-To ensure our forecasts are based on current pandemic behaviour, Equation 1 should be fitted to only the most recent segment tof the case rate timeseries. Including too few dates in our model will yield poor inferences of the model parameters with unhelpfully large uncertainties. Too long and we risk confusing the fit by including data from earlier in the pandemic with different growth behaviour (corresponding to a different set of I_0 and m parameters). For this model, we fit the most recent 21 days of case rates.
+To ensure our forecasts are based on current pandemic behaviour, Equation 1 should be fitted to only the most recent segment tof the case rate timeseries. Including too few dates in our model will yield poor inferences of the model parameters with unhelpfully large uncertainties. Too long and we risk confusing the fit by including data from earlier in the pandemic with different growth behaviour (corresponding to a different set of I_0 and m parameters). In this model we fit the most recent 21 days of case rates.
 
 
 ## Log-linear Modelling
 
 Linear models have the advantage of an analytically-derived fit without requiring iteration and we can cast the above relation as a linear model by taking natural logs of both sides such that, 
 
-<img src="https://latex.codecogs.com/svg.latex?\Large&space;ln(I)=ln(I_0) + m(t-t_0)" title="equation_lnI}" />
+<img src="https://latex.codecogs.com/svg.latex?\Large&space;ln(I)=ln(I_0)+m(t-t_0)" title="equation_lnI}" />
 
 Covariance between the ln(I_0) and m parameters can then be eliminated by chosing a suitable choice of a suitable feature space such that
 <img src="https://latex.codecogs.com/svg.latex?\Large&space;t-t_0 = -N/2 ... N/2" title="equation_t0}" />
