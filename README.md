@@ -29,9 +29,22 @@ The above is equivalent to the following relation involving the popular reproduc
 R can then be related to the inf
 
 
+![Test Image 1](https://github.com/dstarkey23/disease_spread/blob/master/results/recent/forecast.png)
+
 
 ## Daily UK Case Data by Specimin Date
 The daily case data, available at https://coronavirus.data.gov.uk/ , is refreshed daily at around 16:30 GMT and can be used to produce daily updates to the following forecast models to ensure both the forecast and R parameter inferences are as recent as possible.
 
 
 ## Inter
+
+
+
+
+
+## Parameter fits
+
+The best fitting parameters and uncertainties are plotted below. We see that decorrelating the parameters using a suitably chosen  pivot point t_0 has eliminated almost all the covariance between the R and I_0 parameters. The large uncertainty in R arrises mainly due to few (21) and highly scattered data points in our modelled sample.
+
+![Test Image 1](https://github.com/dstarkey23/disease_spread/blob/master/results/recent/covariance.png)
+
