@@ -12,9 +12,9 @@ dirname = './results/recent'
 # Save the output figures in a "recent"
 # folder for updating the readme page
 fig_plot = x.plot_model(return_figure=True, reference_level=1000)
-plt.savefig(dirname+'/forecast.jpeg')
+plt.savefig(dirname+'/forecast.png',dpi=1000)
 fig_cov = x.plot_covariance(return_figure=True)
-plt.savefig(dirname+'/correlation.jpeg')
+plt.savefig(dirname+'/correlation.png',dpi=1000)
 
 # Save the model
 f = open(dirname + "/model.pkl", "wb")
