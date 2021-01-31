@@ -14,7 +14,7 @@ dirname = './results/recent'
 fig_plot = x.plot_model(return_figure=True, reference_level=1000)
 plt.savefig(dirname+'/forecast.png',dpi=1200)
 fig_cov = x.plot_covariance(return_figure=True)
-plt.savefig(dirname+'/correlation.png',dpi=1200)
+plt.savefig(dirname+'/correlation.png',dpi=500)
 
 # Save the model
 f = open(dirname + "/model.pkl", "wb")
