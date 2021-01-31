@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ed0946e0-b84f-4328-9c6c-4eabb04a60a7" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run_govuk_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_govuk_model.py" afterDir="false" />
-    </list>
+    <list default="true" id="ed0946e0-b84f-4328-9c6c-4eabb04a60a7" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -51,7 +48,7 @@
       <workItem from="1611946857691" duration="1028000" />
       <workItem from="1611997629510" duration="207000" />
       <workItem from="1612031030273" duration="533000" />
-      <workItem from="1612110173595" duration="183000" />
+      <workItem from="1612110173595" duration="265000" />
     </task>
     <servers />
   </component>
