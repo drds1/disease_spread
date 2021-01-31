@@ -437,6 +437,8 @@ def run_govukmodel():
     pickle.dump({'model': x}, f)
     f.close()
 
+    return x
+
 
 
 
