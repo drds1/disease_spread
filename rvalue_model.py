@@ -211,13 +211,24 @@ class rmodel_govuk(rmodel):
     def __init__(self,forecast_length = 60,
                  model_days = 14,
                  model_date = None,
-                 discount_incomplete_days = 4):
-        super().__init__(url = 'https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesBySpecimenDate&format=csv',
+                 discount_incomplete_days = 4,
+                 url = 'https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesBySpecimenDate&format=csv'):
+        super().__init__(url = url,
                          plot_title='Cases by specimen date: ' + str(pd.Timestamp.today().date()),
                          forecast_length = forecast_length,
                          model_days = model_days,
                          model_date = model_date)
         self.discount_incomplete_days = discount_incomplete_days
+
+    def check_todays_update(self):
+        '''
+        check to see if new data is available today
+        :return:
+        '''
+        xtoday = rmodel_govuk(url = 'https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesByPublishDate&format=csv')
+        xtoday.download()
+        df = xtoday.df_master
+        return str(df['date'].max()) == str(pd.Timestamp.today().date())
 
     def prep_timeseries(self):
         c = self.df_master
@@ -488,22 +499,25 @@ if __name__ == '__main__':
     x = rmodel_govuk(model_days=21,
                      discount_incomplete_days = 4,
                      forecast_length=150)
-    x.download()
+    #new_data = x.check_todays_update()
+    #x.download()
 
-    x.prep_timeseries()
 
 
-    x.prep_features()
-    x.prep_model()
-    x.prep_weights()
-    x.multi_run(min_date=pd.Timestamp(2020, 6, 15))
-    x.fit()
-    x.get_output_parms()
+    #x.prep_timeseries()
 #
-    plt.close()
-    fig_plot = x.plot_multi(reference_level=2000)
-    plt.savefig('rvalue_forecast.pdf')
-
+#
+    #x.prep_features()
+    #x.prep_model()
+    #x.prep_weights()
+    #x.multi_run(min_date=pd.Timestamp(2020, 6, 15))
+    #x.fit()
+    #x.get_output_parms()
+##
+    #plt.close()
+    #fig_plot = x.plot_multi(reference_level=2000)
+    #plt.savefig('rvalue_forecast.pdf')
+#
 
 
 

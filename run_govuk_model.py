@@ -3,6 +3,12 @@ import subprocess as cmd
 import pandas as pd
 import pickle
 
+# Check for new data. Abort if none
+x_newdatacheck = rmodel_govuk()
+new_data = x_newdatacheck.check_todays_update()
+if new_data is False:
+    raise Exception('No new data for '+str(pd.Timestamp.today().date())+'. Aborting')
+
 # Run the model
 x = run_govukmodel()
 
