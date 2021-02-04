@@ -11,12 +11,12 @@ with the reference daily case rate *I<sub>0</sub>* and growth constant m as para
 
 ## Daily Case Data
 
-This is a publically available UK government data source available at https://coronavirus.data.gov.uk/ . An machine readable, code integrable api call for the 'case-by-specimen' data can be found [here](https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesBySpecimenDate&format=csv).
+This is a publically available UK government data source available at https://coronavirus.data.gov.uk/ . An machine-readable, code-integrable api call for the 'case-by-specimen' data can be found at https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesBySpecimenDate&format=csv .
 
 
 ## Derivation of R
 
-Equation *1* is equivalent to the following relation involving the reproduction factor *R* formulation of the exponential growth problem where
+Equation 1 is equivalent to the following relation involving the reproduction factor *R* formulation of the exponential growth problem where
 
 **2:** <img src="https://latex.codecogs.com/svg.latex?\Large&space;I(t)=I_0R^{(t-t_0)/\tau}" title="equation_I_r" />
 
@@ -35,23 +35,23 @@ To ensure our forecasts are based on current pandemic behaviour, Equation 1 shou
 
 Linear models have the advantage of an analytically-derived fit without requiring iteration and we can cast the above relation as a linear model by taking natural logs of both sides such that, 
 
-<img src="https://latex.codecogs.com/svg.latex?\Large&space;ln(I)=ln(I_0)+m(t-t_0)" title="equation_lnI}" />
+**3:** <img src="https://latex.codecogs.com/svg.latex?\Large&space;ln(I)=ln(I_0)+m(t-t_0)" title="equation_lnI}" />
 
-Covariance between the ln(I_0) and m parameters can then be eliminated by chosing a suitable choice of a suitable feature space such that
-<img src="https://latex.codecogs.com/svg.latex?\Large&space;t-t_0 = -N/2 ... N/2" title="equation_t0}" />
-
-where N is the modelled sample size (21 days) and we increment in 1-day cadence (e.g. t - t_0 = -10, -9, ... 8, 9, 10).
+Covariance between the *ln(I<sub>0</sub>)* and *m* parameters can then be eliminated by chosing a suitable choice of a suitable feature space such that
+*t-t<sub>0</sub> = -N/2 ... N/2*, where *N* is the modelled sample size (21 days) and we increment in 1-day cadence (e.g. *t - t<sub>0</sub> = -10, -9, ... 8, 9, 10*).
 
 
 
 ![Test Image 1](https://github.com/dstarkey23/disease_spread/blob/master/results/recent/forecast.png)
 
 
-## Daily UK Case Data by Specimin Date
-The daily case data, available at https://coronavirus.data.gov.uk/ , is refreshed daily at around 16:30 GMT and can be used to produce daily updates to the following forecast models to ensure both the forecast and R parameter inferences are as recent as possible.
+*numpy*'s polyfit module is used to perform the log linear fitting. This is embedded into the *rmodel* class in the [accompanying script](https://github.com/dstarkey23/disease_spread/blob/master/rvalue_model.py).
 
 
-## Inter
+
+## Model Uncertainties
+
+The model also attempts to simulate the expected uncertainty in the forecast using the day-to-day scatter between case rates. This is achieved by assigning inverse variance weights to each data point whose variances are calculated from the residuals of a smooth 5-day rolling average.
 
 
 
