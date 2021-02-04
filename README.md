@@ -6,7 +6,12 @@ This project models the UK COVID19 daily case rate I(t) as an exponential proces
 
 **1:** <img src="https://latex.codecogs.com/svg.latex?\Large&space;I(t)=I_0e^{m(t-t_0)}" title="equation_I}" />  
 
-with the reference daily case rate *I_0* and growth constant m as parameteres to be modelled. It is assumed that once daily cases drop below an arbitrary threshold of 1000 new cases per day, lockdown magically ends.
+with the reference daily case rate *I<sub>0</sub>* and growth constant m as parameteres to be modelled. It is assumed that once daily cases drop below an arbitrary threshold of 1000 new cases per day, lockdown magically ends.
+
+
+## Daily Case Data
+
+This is a publically available UK government data source available at https://coronavirus.data.gov.uk/ . An machine readable, code integrable api call for the 'case-by-specimen' data can be found [here](https://api.coronavirus.data.gov.uk/v2/data?areaType=overview&metric=newCasesBySpecimenDate&format=csv).
 
 
 ## Derivation of R
@@ -18,14 +23,12 @@ Equation *1* is equivalent to the following relation involving the reproduction 
 
 In reality, an individual is unlikely to be equally as infectious throughout their illness and will exhibit a time dependent "infectivity" curve. This will be neglected here and a uniform infectious period of &tau; = 14 days is assumed during which an individual is equally likely to pass along the disease. This in effect assumes a top-hat (or boxcar) infectivity curve. 
 
- R is obtained from Equations 1 and 2 as 
-<img src="https://latex.codecogs.com/svg.latex?\Large&space;R=e^{m\tau}" title="equation_r" />
-
+*R*, by equating Equations 1 and 2, is given by *R=e<sup>m/&tau;</sup>*. 
 
 
 ## Model Data Selection
 
-To ensure our forecasts are based on current pandemic behaviour, Equation 1 should be fitted to only the most recent segment tof the case rate timeseries. Including too few dates in our model will yield poor inferences of the model parameters with unhelpfully large uncertainties. Too long and we risk confusing the fit by including data from earlier in the pandemic with different growth behaviour (corresponding to a different set of I_0 and m parameters). In this model we fit the most recent 21 days of case rates.
+To ensure our forecasts are based on current pandemic behaviour, Equation 1 should be fitted to only the most recent segment of data from the case rate timeseries. Including too few dates in our model will yield inprecise parameter inferences whereas too long and we risk confusing the fit by including data from earlier in the pandemic with different growth behaviour (corresponding to a different set of I_0 and m parameters). In this model we fit the most recent 21 days of case rates.
 
 
 ## Log-linear Modelling
