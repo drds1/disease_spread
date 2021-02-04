@@ -1,4 +1,4 @@
-# disease_spread
+# COVID Case Forecasts
 
 With COVID-19 still (at the time of writing) very much ravaging the UK, almost all the population remains in tight lockdown. This project aims to forecast an approximate date at which travel restrictions might slowly and safely begin to unwind. 
 
