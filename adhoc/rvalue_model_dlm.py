@@ -1,5 +1,6 @@
 import pandas as pd
 import io
+import requests
 import numpy as np
 import requests
 import sklearn.preprocessing
@@ -8,6 +9,8 @@ import corner
 import matplotlib.backends.backend_pdf
 import os
 import pickle
+#import pyflux
+from pydlm import dlm, trend
 import matplotlib.gridspec as gridspec
 
 
@@ -294,6 +297,122 @@ class rmodel_govuk(rmodel):
         plt.xticks(rotation=45)
         plt.tight_layout()
         return fig
+
+
+
+
+
+
+class rmodel_govuk_dlm(rmodel_govuk):
+    def __init__(self,
+                 forecast_length = 60,
+                 model_date = pd.Timestamp(2020,9,1),
+                 discount_incomplete_days = 4):
+        super().__init__(forecast_length = forecast_length,
+                         model_days = None,
+                         model_date = model_date)
+        self.discount_incomplete_days = discount_incomplete_days
+
+    def fit(self, nsamples = 5000):
+        '''
+
+        :return:
+        '''
+        myDLM = dlm(self.yln)
+        myDLM = myDLM + trend(degree=1, discount=0.9, name='trend1')
+        myDLM.fit()
+
+        results = np.array(myDLM.result.predictedObs)[:, 0, 0]
+        results_var = np.array(myDLM.result.predictedObsVar)[:, 0, 0]
+        predicted, predicted_var = myDLM.predictN(self.forecast_length-1, myDLM.n - 1)
+
+        ###INCOMPLETE HOW TO DEAL WITH UNCERTAINTIES!!!!
+        coef = np.array(myDLM.getLatentState())
+        cov = myDLM.result.smoothedCov
+        self.myDLM = myDLM
+
+        yln_all = np.append(results, predicted)
+        yln_all_var = np.append(results_var, predicted_var)
+        nall = len(yln_all)
+        yln_models = np.random.randn(nall, nsamples) * \
+                     np.tile(np.sqrt(yln_all_var), nsamples).reshape(nall,nsamples) + \
+                     np.tile(yln_all, nsamples).reshape(nall, nsamples)
+        y_models = np.exp(yln_models)
+        self.y_proj = np.percentile(y_models, [25, 50, 75], axis=1).T
+        self.cov = cov
+        self.coef = coef
+
+    def get_output_parms(self, tau = 14):
+        '''
+        convert the log exponential fit to I0 and R parameters
+        :return:
+        '''
+        ###INCOMPLETE HOW TO DEAL WITH UNCERTAINTIES!!!!
+        coef = self.coef
+        cov = self.cov
+
+        ## simulate errorbars on parameters
+        parms_multisample = []
+        for idx in range(len(cov)):
+            covnow = cov[idx]
+            pnow = coef[idx, :]
+            parms_multisample.append(np.random.multivariate_normal(pnow, covnow, 1000))
+        self.parms_multisample = np.array(parms_multisample)
+        gradient = self.parms_multisample[:, :, 1]
+        self.output_R = np.exp(gradient * tau)
+        self.output_R_percentile = np.percentile(self.output_R, [25, 50, 75], axis=1)
+        self.output_I0 = np.exp(self.parms_multisample[:, :, 0])
+        self.output_I0_percentile = np.percentile(self.output_I0, [25, 50, 75], axis=1)
+
+
+    def plot_model(self,
+                   file = None,
+                   return_figure = True,
+                   reference_level = 2000):
+        '''
+
+        :return:
+        '''
+        # plot the data and overlay the models with uncertainty snakes
+        ylo, ymed, yhi = self.y_proj[:,0], self.y_proj[:,1], self.y_proj[:,2]
+        plt.close()
+        fig = plt.figure()
+        ax1 = fig.add_subplot(211)
+        ax1.bar(self.dates, self.rates,color='r')
+        ann = 'Forecast \n '+r'$I=I_0\, R^{t / \tau}$'
+        ax1.plot(self.dates_fc, ymed,color='b',label = ann)
+        ax1.fill_between(self.dates_fc, ylo, yhi,color='b',alpha=0.2)
+        idx_ref = np.where(ymed > reference_level)[0][-1]
+        date_ref = str(self.dates_fc[idx_ref].date())
+        yref = self.rates[self.rates > reference_level].values[0]
+        ax1.axhline(yref,
+                    label='Arbitrary "safe" level\n'+str(reference_level)+' cases reached by: '+date_ref,
+                    color='k',ls='--')
+        ax1.set_title(self.plot_title)
+        plt.xticks(rotation=45)
+        ax1.legend()
+
+        #plot the dynamic R value
+        ax2 = fig.add_subplot(212)
+        xt = self.dates_fc[:len(self.output_R)]
+        ax2.plot(xt, self.output_R_percentile[1,:],
+                 color='b')
+        ax2.fill_between(xt,
+                         self.output_R_percentile[0,:],
+                         self.output_R_percentile[2,:],
+                         alpha = 0.2,color='b')
+        ax2.set_title('Dynamic R Estimate')
+        ax2.set_xlim(ax1.get_xlim())
+        plt.xticks(rotation=45)
+
+        plt.tight_layout()
+        if return_figure is True:
+            return fig
+        elif file is not None:
+            plt.savefig(file)
+            plt.close()
+
+
 
 
 
