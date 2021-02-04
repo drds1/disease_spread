@@ -15,7 +15,6 @@ Equation *1* is equivalent to the following relation involving the reproduction 
 
 **2:** <img src="https://latex.codecogs.com/svg.latex?\Large&space;I(t)=I_0R^{(t-t_0)/\tau}" title="equation_I_r" />
 
-*I(t)=I<sub>0</sub> R<sup>(t-t<sub>0</sub>/$tau;*
 
 In reality, an individual is unlikely to be equally as infectious throughout their illness and will exhibit a time dependent "infectivity" curve. This will be neglected here and a uniform infectious period of &tau; = 14 days is assumed during which an individual is equally likely to pass along the disease. This in effect assumes a top-hat (or boxcar) infectivity curve. 
 
@@ -60,4 +59,14 @@ The daily case data, available at https://coronavirus.data.gov.uk/ , is refreshe
 The best fitting parameters and uncertainties are plotted below. We see that decorrelating the parameters using a suitably chosen  pivot point t_0 has eliminated almost all the covariance between the R and I_0 parameters. The large uncertainty in R arrises mainly due to few (21) and highly scattered data points in our modelled sample.
 
 ![Test Image 1](https://github.com/dstarkey23/disease_spread/blob/master/results/recent/correlation.png)
+
+
+
+
+
+
+## Appendix
+
+Notes for embedding equations and symbold in .md files: https://www.xspdf.com/help/50653644.html
+e.g. *I(t)=I<sub>0</sub> R<sup>(t-t<sub>0</sub>)/&tau;</sup>*
 
