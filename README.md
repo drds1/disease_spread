@@ -37,7 +37,7 @@ Linear models have the advantage of an analytically-derived fit without requirin
 
 **3:** <img src="https://latex.codecogs.com/svg.latex?\Large&space;ln(I)=ln(I_0)+m(t-t_0)" title="equation_lnI}" />
 
-Covariance between the *ln(I<sub>0</sub>)* and *m* parameters can then be eliminated by chosing a suitable choice of a suitable feature space such that
+Covariance between the *ln(I<sub>0</sub>)* and *m* parameters can then be eliminated by a suitable choice of feature space such that
 *t-t<sub>0</sub> = -N/2 ... N/2*, where *N* is the modelled sample size (21 days) and we increment in 1-day cadence (e.g. *t - t<sub>0</sub> = -10, -9, ... 8, 9, 10*).
 
 
@@ -57,9 +57,9 @@ The model also attempts to simulate the expected uncertainty in the forecast usi
 
 
 
-## Parameter fits
+## Parameter fits
 
-The best fitting parameters and uncertainties are plotted below. We see that decorrelating the parameters using a suitably chosen  pivot point t_0 has eliminated almost all the covariance between the R and I_0 parameters. The large uncertainty in R arrises mainly due to few (21) and highly scattered data points in our modelled sample.
+The best fitting parameters and uncertainties are plotted below. We see that decorrelating the parameters using a suitably chosen  pivot point t_0 has eliminated almost all the covariance between the *R* and *I<sub>0</sub>* parameters. The large uncertainty in *R* arrises mainly due to few (21) and highly scattered data points in our modelled sample.
 
 ![Test Image 1](https://github.com/dstarkey23/disease_spread/blob/master/results/recent/correlation.png)
 
