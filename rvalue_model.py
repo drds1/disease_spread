@@ -381,23 +381,23 @@ if __name__ == '__main__':
                      discount_incomplete_days = 4,
                      forecast_length=150)
     #new_data = x.check_todays_update()
-    #x.download()
+    x.download()
 
 
 
-    #x.prep_timeseries()
+    x.prep_timeseries()
 #
 #
-    #x.prep_features()
-    #x.prep_model()
-    #x.prep_weights()
-    #x.multi_run(min_date=pd.Timestamp(2020, 6, 15))
-    #x.fit()
-    #x.get_output_parms()
+    x.prep_features()
+    x.prep_model()
+    x.prep_weights()
+    x.multi_run(min_date=pd.Timestamp(2020, 6, 15))
+    x.fit()
+    x.get_output_parms()
 ##
-    #plt.close()
-    #fig_plot = x.plot_multi(reference_level=2000)
-    #plt.savefig('rvalue_forecast.pdf')
+    plt.close()
+    fig_plot = x.plot_multi(reference_level=2000)
+    plt.savefig('./adhoc/rvalue_multi_forecast.pdf')
 #
 
 
