@@ -248,6 +248,8 @@ class rmodel_govuk(rmodel):
         multi_date_r = []
         multi_r_r = []
         multi_r_sd = []
+        multi_r_lo = []
+        multi_r_hi = []
         for date in list(dates_running):
             x1 = rmodel_govuk(model_days=model_days, forecast_length=150)
             x1.df_master = df_master.loc[df_master['date'] <= date]
@@ -261,9 +263,40 @@ class rmodel_govuk(rmodel):
             multi_date_r.append(date - pd.Timedelta(str(model_days / 2) + 'D'))
             multi_r_r.append(x1r[1])
             multi_r_sd.append(0.5*(x1r[2]-x1r[0]))
+            multi_r_lo.append(x1r[0])
+            multi_r_hi.append(x1r[2])
         self.multi_r_r = np.array(multi_r_r)
+        self.multi_r_lo = np.array(multi_r_lo)
+        self.multi_r_hi = np.array(multi_r_hi)
         self.multi_r_sd = np.array(multi_r_sd)
         self.multi_date_r = pd.Series(multi_date_r)
+
+
+    def plot_r_estimate(self, fig, ax2):
+        '''
+
+        :param fig:
+        :param r:
+        :return:
+        '''
+        for i in range(len(self.multi_date_r)-1):
+            x = self.multi_date_r[i:i+1]
+            y = self.multi_r_r[i:i+1]
+            ylo = self.multi_r_lo[i:i+1]
+            yhi = self.multi_r_hi[i:i+1]
+            if y < 1:
+                color = 'b'
+            else:
+                color = 'r'
+
+            ax2.fill_between(x, ylo, yhi, color=color,alpha=0.2,label=None)
+            ax2.scatter(x, y, color=color, label=None,alpha=1)
+        ax2.axhline(1.0, color='k', ls='--', label='r=1')
+        ax2.axhline(0.0, color='k', ls='-', label=None)
+        ax2.set_title('Rolling R Calculation')
+        plt.xticks(rotation=45)
+        return fig, ax2
+
 
     def plot_multi(self,reference_level=2000):
         '''
@@ -284,14 +317,9 @@ class rmodel_govuk(rmodel):
 
         #make running R plot
         ax2 = fig.add_subplot(gs[-2:, :])
-        ax2.plot(self.multi_date_r,self.multi_r_r,label='rolling R calculation')
-        ax2.fill_between(self.multi_date_r,
-                         self.multi_r_r - self.multi_r_sd,
-                         self.multi_r_r + self.multi_r_sd,
-                         color='b',alpha=0.2)
+        fig, ax2 = self.plot_r_estimate(fig, ax2)
         ax2.set_xlim(ax1.get_xlim())
-        ax2.set_title('Rolling R Calculation')
-        plt.xticks(rotation=45)
+
         plt.tight_layout()
         return fig
 
@@ -399,6 +427,29 @@ if __name__ == '__main__':
     fig_plot = x.plot_multi(reference_level=2000)
     plt.savefig('./adhoc/rvalue_multi_forecast.pdf')
 #
+
+    #only plot the rolling r tracker
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    x.plot_r_estimate(fig, ax1)
+    ax1.set_title('Rolling Reproduction Factor Calculation')
+
+    xann = {'date':[pd.Timestamp(2020, 3, 23),
+            pd.Timestamp(2020, 11, 5),
+            pd.Timestamp(2021, 1, 2)],
+            'label':['Lockdown 1','2','3']}
+    idx = 1
+    for date, lab in zip(xann['date'],xann['label']):
+        if idx == 1:
+            label = 'UK Lockdowns'
+        else:
+            label = None
+        ax1.axvline(date,ls=':',label=label,color='purple')
+        idx += 1
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig('./adhoc/rvalue_plot.pdf')
+
 
 
 
