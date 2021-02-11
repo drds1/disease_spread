@@ -73,7 +73,7 @@ figure below where dates of the 3 previous UK lockdowns
 are over-plotted to show qualitatively the 
 suppression of virus transmission caused by the tighter social restrictions.
 
-![Test Image 1](https://github.com/dstarkey23/disease_spread/blob/master/results/recent/rolling_r_plot.png.png)
+![Test Image 1](https://github.com/dstarkey23/disease_spread/blob/master/results/recent/rolling_r_plot.png)
 
 
 ## Appendix
