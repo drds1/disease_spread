@@ -64,8 +64,16 @@ The best fitting parameters and uncertainties are plotted below. We see that dec
 ![Test Image 1](https://github.com/dstarkey23/disease_spread/blob/master/results/recent/correlation.png)
 
 
+## Rolling Reproduction Rate Modelling
 
+We can run the model on earlier data 
+to estimate the r-number at 
+past points in the pandemic history. This is shown in the 
+figure below where dates of the 3 previous UK lockdowns 
+are over-plotted to show qualitatively the 
+suppression of virus transmission caused by the tighter social restrictions.
 
+![Test Image 1](https://github.com/dstarkey23/disease_spread/blob/master/results/recent/rolling_r_plot.png.png)
 
 
 ## Appendix

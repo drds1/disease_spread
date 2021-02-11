@@ -337,7 +337,7 @@ def run_govukmodel():
     x.prep_features()
     x.prep_model()
     x.prep_weights()
-
+    x.multi_run(min_date=pd.Timestamp(2020, 6, 15))
     x.fit()
     x.get_output_parms()
     fig_plot = x.plot_model(file='rvalue_forecast.pdf',

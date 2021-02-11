@@ -22,6 +22,30 @@ plt.savefig(dirname+'/forecast.png',dpi=1200)
 fig_cov = x.plot_covariance(return_figure=True)
 plt.savefig(dirname+'/correlation.png',dpi=500)
 
+
+# Plot the rolling r tracker
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+x.plot_r_estimate(fig, ax1)
+ax1.set_title('Rolling Reproduction Factor Calculation')
+
+xann = {'date':[pd.Timestamp(2020, 3, 23),
+        pd.Timestamp(2020, 11, 5),
+        pd.Timestamp(2021, 1, 2)],
+        'label':['Lockdown 1','2','3']}
+idx = 1
+for date, lab in zip(xann['date'],xann['label']):
+    if idx == 1:
+        label = 'UK Lockdowns'
+    else:
+        label = None
+    ax1.axvline(date,ls=':',label=label,color='purple')
+    idx += 1
+plt.legend()
+plt.tight_layout()
+plt.savefig(dirname+'/rolling_r_plot.png',dpi=1000)
+
+
 # Save the model
 f = open(dirname + "/model.pkl", "wb")
 pickle.dump({'model': x}, f)
