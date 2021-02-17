@@ -113,6 +113,15 @@ class rmodel():
         y_models = np.exp(yln_models)
         self.y_proj = np.percentile(y_models,[25,50,75],axis=1).T
 
+    def fit_week_model(self):
+        '''
+        include features for the day of the week
+        :return:
+        '''
+
+        pass
+
+
     def plot_model(self,
                    file = None,
                    return_figure = True,
