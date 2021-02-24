@@ -2,6 +2,7 @@ from rvalue_model import *
 import subprocess as cmd
 import pandas as pd
 import pickle
+import time
 
 # Check for new data. Abort if none
 x_newdatacheck = rmodel_govuk()
@@ -11,6 +12,8 @@ if new_data is False:
 
 # Run the model
 x = run_govukmodel()
+
+time.sleep(15)
 
 # Specify folder to save the most recent model and plots
 dirname = './results/recent'
