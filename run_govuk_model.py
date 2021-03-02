@@ -4,6 +4,11 @@ import pandas as pd
 import pickle
 import time
 
+# pull latest code from github
+cp = cmd.run("git pull", check=True, shell=True)
+time.sleep(15)
+
+
 # Check for new data. Abort if none
 x_newdatacheck = rmodel_govuk()
 new_data = x_newdatacheck.check_todays_update()
@@ -56,7 +61,6 @@ f.close()
 
 # Commit results to github
 today_str = str(pd.Timestamp.today().date())
-cp = cmd.run("git pull", check=True, shell=True)
 cp = cmd.run("git add .", check=True, shell=True)
 message = "Results "+today_str
 cp = cmd.run(f"git commit -m '{message}'", check=True, shell=True)

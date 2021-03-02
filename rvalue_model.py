@@ -455,6 +455,9 @@ if __name__ == '__main__':
             label = None
         ax1.axvline(date,ls=':',label=label,color='purple')
         idx += 1
+    #add uk return to school
+    ax1.axvline(pd.Timestamp(2021, 3, 8),ls='--',color='r',label='Schools re-open')
+
     plt.legend()
     plt.tight_layout()
     plt.savefig('./adhoc/rvalue_plot.pdf')
