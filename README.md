@@ -5,6 +5,7 @@ With COVID-19 still (at the time of writing) very much ravaging the UK, almost a
 This project models the UK COVID19 daily case rate I(t) as an exponential process of the form
 
 **1:** <img src="https://latex.codecogs.com/svg.latex?\Large&space;I(t)=I_0e^{m(t-t_0)}" title="equation_I" />  
+**2:** <img src="https://latex.codecogs.com/svg.latex?\Large&space;I(t)=I_0R^{(t-t_0)/\tau}" title="equation_I_r" />
 
 with the reference daily case rate *I<sub>0</sub>* and growth constant m as parameteres to be modelled. It is assumed that once daily cases drop below an arbitrary threshold of 1000 new cases per day, lockdown magically ends.
 
