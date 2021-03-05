@@ -16,6 +16,8 @@ This is a publically available UK government data source available at https://co
 
 ## Derivation of R
 
+It should be noted the modelling below uses a simplified log-linear exponential modelling approach rather than a more rigorous Suppectible-Infectious-Recovered (SIR) model. As such the "R" calculation here is quantitatively slightly different to that reported in official figures. Qualitatively however, the meaning is the same. R above 1 means the infection is growing, less than 1 means it is shrinking. An R of exactly 1 means that each infected person who recovers (or dies) is replaced by exactly one other infected person, causing the case numbers to remain level.
+
 Equation 1 is equivalent to the following relation involving the reproduction factor *R* formulation of the exponential growth problem where
 
 **2:** <img src="https://latex.codecogs.com/svg.latex?\Large&space;I(t)=I_0R^{(t-t_0)/\tau}" title="equation_I_r" />
