@@ -61,7 +61,7 @@ for ts in [pd.Timestamp(2021, 3, 29),
            pd.Timestamp(2021, 5, 17),
            pd.Timestamp(2021, 6, 21)]:
     if idx == 0:
-        ax1.axvline(ts,ls='--',color='r',label='Unlocking Stages')
+        ax1.axvline(ts,ls=':',color='r',label='Unlocking Stages')
     else:
         ax1.axvline(ts,ls=':',color='r',label=None)
     idx += 1
