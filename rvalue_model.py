@@ -150,24 +150,27 @@ class rmodel():
                'Model period: '+str(self.dates_modeled[0].date())+' --> '+str(self.dates_modeled[-1].date())
                 #r'$I_0 = e^{c} = $(' + \
                 #np.str(np.int(I0lo)) + ' < ' + np.str(np.int(I0med)) + ' < ' + np.str(np.int(I0hi)) + ')'
+        ymin, ymax = ax1.get_ylim()
+
         if Rmed < 1.0:
             ax1.plot(self.dates_fc, ymed,color='b',label = ann)
             ax1.fill_between(self.dates_fc, ylo, yhi,color='b',alpha=0.2)
             idx_ref = np.where(ymed > reference_level)[0][-1]
             date_ref = str(self.dates_fc[idx_ref].date())
             yref = self.rates[self.rates > reference_level].values[0]
-            ax1.axhline(yref, label='Arbitrary "safe" level\n'+str(reference_level)+' cases reached by: '+date_ref,
+            if (idx_ref < len(ymed) - 2): #do not annotate safe level if beyond edge of forecast
+                ax1.axhline(yref, label='Arbitrary "safe" level\n'+str(reference_level)+' cases reached by: '+date_ref,
                     color='k',ls='--')
+
         else:
-            ymin, ymax = ax1.get_ylim()
             doubling_time = self.tau * np.log(2)/np.log(Rmed)
             ax1.plot(self.dates_fc, ymed, color='r', label=ann)
             ax1.fill_between(self.dates_fc, ylo, yhi, color='r', alpha=0.2)
             ax1.axhline(reference_level,
                         label='Arbitrary "safe" level\n' + str(reference_level) + ' unreachable (R > 1)\nCurrent doubling time = '+np.str(np.round(doubling_time,2))+' days',
                         color='k', ls='--')
-            ax1.set_ylim((ymin,ymax))
 
+        ax1.set_ylim((ymin,ymax))
         ax1.annotate('Model Stats: ',
                      (0.05, 0.70),
                      xycoords = 'axes fraction',

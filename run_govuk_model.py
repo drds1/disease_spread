@@ -53,6 +53,21 @@ for date, lab in zip(xann['date'],xann['label']):
 #add uk return to school
 ax1.axvline(pd.Timestamp(2021, 3, 8),ls='--',color='r',label='Schools re-open')
 
+# restrictions lifted in sequence https://www.bbc.co.uk/news/explainers-52530518
+# stage 1 restrictions lifted # outdoor gardens (rule of 6)
+idx = 0
+for ts in [pd.Timestamp(2021, 3, 29),
+           pd.Timestamp(2021, 4, 12),
+           pd.Timestamp(2021, 5, 17),
+           pd.Timestamp(2021, 6, 21)]:
+    if idx == 0:
+        ax1.axvline(ts,ls='--',color='r',label='Unlocking Stages')
+    else:
+        ax1.axvline(ts,ls='--',color='r',label=None)
+    idx += 1
+
+
+
 plt.legend()
 plt.tight_layout()
 plt.savefig(dirname+'/rolling_r_plot.png',dpi=1000)
