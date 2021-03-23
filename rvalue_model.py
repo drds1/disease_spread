@@ -158,9 +158,10 @@ class rmodel():
             idx_ref = np.where(ymed > reference_level)[0][-1]
             date_ref = str(self.dates_fc[idx_ref].date())
             yref = self.rates[self.rates > reference_level].values[0]
-            if (idx_ref < len(ymed) - 2): #do not annotate safe level if beyond edge of forecast
-                ax1.axhline(yref, label='Arbitrary "safe" level\n'+str(reference_level)+' cases reached by: '+date_ref,
-                    color='k',ls='--')
+            label = 'Arbitrary "safe" level\n' + str(reference_level) + ' cases'
+            if (idx_ref < len(ymed) - 2): #do not annotate safe level forecast if beyond edge of forecast
+                label += ' reached by: '+date_ref
+            ax1.axhline(yref, label=label, color='k',ls='--')
 
         else:
             doubling_time = self.tau * np.log(2)/np.log(Rmed)
