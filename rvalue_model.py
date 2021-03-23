@@ -162,7 +162,6 @@ class rmodel():
             if (idx_ref < len(ymed) - 2): #do not annotate safe level forecast if beyond edge of forecast
                 label += ' reached by: '+date_ref
             ax1.axhline(yref, label=label, color='k',ls='--')
-
         else:
             doubling_time = self.tau * np.log(2)/np.log(Rmed)
             ax1.plot(self.dates_fc, ymed, color='r', label=ann)
