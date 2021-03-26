@@ -56,7 +56,9 @@ ax1.axvline(pd.Timestamp(2021, 3, 8),ls='--',color='r',label='Schools re-open')
 # restrictions lifted in sequence https://www.bbc.co.uk/news/explainers-52530518
 # stage 1 restrictions lifted # outdoor gardens (rule of 6)
 idx = 0
-for ts in [pd.Timestamp(2021, 3, 29),
+for ts in [pd.Timestamp(2020, 6, 1),
+           pd.Timestamp(2020, 12, 1),
+           pd.Timestamp(2021, 3, 29),
            pd.Timestamp(2021, 4, 12),
            pd.Timestamp(2021, 5, 17),
            pd.Timestamp(2021, 6, 21)]:
