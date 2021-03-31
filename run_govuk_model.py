@@ -34,7 +34,7 @@ plt.savefig(dirname+'/correlation.png',dpi=500)
 # Plot the rolling r tracker
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-x.plot_r_estimate(fig, ax1)
+fig, ax1 = x.plot_r_estimate(fig, ax1)
 ax1.set_title('Rolling Reproduction Factor Calculation')
 
 xann = {'date':[pd.Timestamp(2020, 3, 23),
