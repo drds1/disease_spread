@@ -313,7 +313,7 @@ class rmodel_govuk(rmodel):
                 color = 'r'
 
             ax2.fill_between(x, ylo, yhi, color=color,alpha=0.2,label=None)
-            ax2.scatter(x, y, color=color, s=0.5, label=None,alpha=1)
+            ax2.scatter(x, y, color=color, s=0.7, label=None,alpha=1)
         ax2.axhline(1.0, color='k', ls='--', label='r=1')
         ax2.axhline(0.0, color='k', ls='-', label=None)
         ax2.set_title('Rolling R Calculation')
