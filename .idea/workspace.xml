@@ -3,10 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ed0946e0-b84f-4328-9c6c-4eabb04a60a7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run_govuk_model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rvalue_model.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,7 +90,7 @@
       <workItem from="1616782487928" duration="286000" />
       <workItem from="1617205679372" duration="793000" />
       <workItem from="1617294199082" duration="545000" />
-      <workItem from="1626631419726" duration="3819000" />
+      <workItem from="1626631419726" duration="3919000" />
     </task>
     <servers />
   </component>
