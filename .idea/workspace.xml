@@ -2,12 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ed0946e0-b84f-4328-9c6c-4eabb04a60a7" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/recent/correlation.png" beforeDir="false" afterPath="$PROJECT_DIR$/results/recent/correlation.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/recent/forecast.png" beforeDir="false" afterPath="$PROJECT_DIR$/results/recent/forecast.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/recent/model.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/results/recent/model.pkl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/recent/rolling_r_plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/results/recent/rolling_r_plot.png" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,6 +12,7 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="JupyterTrust" id="398ec5a9-378d-443c-8c37-8f8dc93c846f" />
   <component name="ProjectId" id="1nR1Fjbz0t5u1wVWeORI8OvVGNj" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -95,7 +91,9 @@
       <workItem from="1616782487928" duration="286000" />
       <workItem from="1617205679372" duration="793000" />
       <workItem from="1617294199082" duration="545000" />
-      <workItem from="1626631419726" duration="4957000" />
+      <workItem from="1626631419726" duration="5338000" />
+      <workItem from="1626722723642" duration="1539000" />
+      <workItem from="1627822465633" duration="1019000" />
     </task>
     <servers />
   </component>
