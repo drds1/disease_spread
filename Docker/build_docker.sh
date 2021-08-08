@@ -1,7 +1,7 @@
 #docker build -f Docker/Dockerfile -t test_container .
 
-docker build -f Docker/Dockerfile --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa.pub)" -t test_container .
-
+docker build -f Docker/Dockerfile --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" --build-arg SSH_PUBLIC_KEY="$(cat ~/.ssh/id_rsa.pub)" -t test_container .
+#--build-arg ssh_prv_key="$(cat ~/.ssh/id_rsa)" --build-arg ssh_pub_key="$(cat ~/.ssh/id_rsa.pub)" --squash .
 
 #docker run --rm -it -v test_container bash
 docker run -it test_container bash
