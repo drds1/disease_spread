@@ -11,3 +11,7 @@ docker run -it test_container bash
 #delete all containers and images
 #docker rm -vf $(docker ps -a -q)
 #docker rmi -f $(docker images -a -q)
+
+# docker build -f Docker/Dockerfile --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" --build-arg SSH_PUBLIC_KEY="$(cat ~/.ssh/id_rsa.pub)" -t ds207/disease_spread .
+# docker push ds207/disease_spread
+
